@@ -17,7 +17,4 @@ export async function POST(req: NextRequest) {
   const hashed = await bcrypt.hash(password, 10)
   users.push({ email, password: hashed })
   return NextResponse.json({ success: true })
-}
-
-// Export users for credentials provider (for demo only)
-export { users } 
+} 

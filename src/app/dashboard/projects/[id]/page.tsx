@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/browser'
@@ -59,7 +59,6 @@ function EventCard({ event }: { event: FormEvent }) {
       <div className="text-sm text-gray-600">
         <div>Field: {event.field_name || 'Unknown'}</div>
         {event.duration && <div>Duration: {Math.round(event.duration / 1000)}s</div>}
-        {event.value && <div>Value: {event.value.substring(0, 50)}{event.value.length > 50 ? '...' : ''}</div>}
       </div>
     </div>
   )
@@ -80,14 +79,7 @@ export default function ProjectDetailPage() {
     eventBreakdown: { focus: 0, blur: 0, input: 0, submit: 0, abandon: 0 },
   })
 
-  useEffect(() => {
-    if (id && user) {
-      fetchProject()
-      fetchEvents()
-    }
-  }, [id, user, fetchProject, fetchEvents])
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -103,9 +95,9 @@ export default function ProjectDetailPage() {
     } catch (error) {
       console.error('Error fetching project:', error)
     }
-  }
+  }, [id, user?.id, startTransition])
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       // Get events for the last 7 days (free tier limit)
       const dateFilter = new Date()
@@ -131,10 +123,10 @@ export default function ProjectDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, startTransition])
 
   const calculateStats = (eventsList: FormEvent[]) => {
-    const uniqueUsers = new Set(eventsList.map(e => e.user_id)).size
+    const uniqueUsers = new Set(eventsList.map(e => e.session_id)).size
     const totalEvents = eventsList.length
     
     // Calculate average time on form
@@ -165,6 +157,13 @@ export default function ProjectDetailPage() {
       })
     })
   }
+
+  useEffect(() => {
+    if (id && user) {
+      fetchProject()
+      fetchEvents()
+    }
+  }, [id, user, fetchProject, fetchEvents])
 
   if (loading || isPending) {
     return (
