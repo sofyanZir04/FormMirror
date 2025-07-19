@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/browser';
 import { Toaster, toast } from 'react-hot-toast';
 import Link from 'next/link';
 
-export default function VerifyPage() {
+function VerifyContent() {
   const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
   const searchParams = useSearchParams();
@@ -95,5 +95,29 @@ export default function VerifyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Loading...</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Please wait while we load the verification page.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <VerifyContent />
+    </Suspense>
   );
 } 
