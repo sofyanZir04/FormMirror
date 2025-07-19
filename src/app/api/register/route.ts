@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-
-// In-memory user store (replace with DB in production)
-const users: { email: string; password: string }[] = []
+import { users } from '@/lib/users'
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json()
