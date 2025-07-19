@@ -14,7 +14,7 @@ function withCORS(json: any, status = 200, origin?: string | null) {
   })
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const origin = request.headers.get('origin');
   console.log('📥 Incoming /api/track request:', request.method, origin, request.headers.get('referer'));
   try {

@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useTransition, Suspense, useMemo } from 'react'
+import { useEffect, useState, useTransition, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 // import { supabase } from '@/lib/supabase'
 import {supabase} from '@/lib/supabase/browser'
 import { Project } from '@/types/database'
 import Link from 'next/link'
-import { Plus, BarChart3, Users, Clock, TrendingUp, UserCircle } from 'lucide-react'
+import { Plus, BarChart3, Users, Clock, UserCircle } from 'lucide-react'
 
 function StatCard({ icon, label, value, gradient }: { icon: React.ReactNode, label: string, value: string | number, gradient: string }) {
   return (
@@ -117,7 +117,7 @@ export default function DashboardPage() {
 
       // Event breakdown
       const eventBreakdown = { focus: 0, blur: 0, input: 0, submit: 0, abandon: 0 }
-      events?.forEach(e => { if (eventBreakdown[e.event_type] !== undefined) eventBreakdown[e.event_type]++ })
+      events?.forEach(e => { if (eventBreakdown[e.event_type as keyof typeof eventBreakdown] !== undefined) eventBreakdown[e.event_type as keyof typeof eventBreakdown]++ })
 
       startTransition(() => {
         setStats({
@@ -163,7 +163,7 @@ export default function DashboardPage() {
           <select
             id="date-range"
             value={dateRange}
-            onChange={e => setDateRange(e.target.value as any)}
+            onChange={e => setDateRange(e.target.value as '7d' | '30d' | '90d')}
             className="border border-blue-200 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm px-3 py-2 bg-white text-gray-700 hover:border-blue-400 transition"
           >
             <option value="7d">Last 7 days (Free)</option>
@@ -211,6 +211,7 @@ export default function DashboardPage() {
             <Plus className="h-5 w-5 mr-2" /> New Project
           </Link>
         </div>
+        
         {memoizedProjects.length === 0 ? (
           <div className="text-center py-16">
             <BarChart3 className="mx-auto h-14 w-14 text-blue-200" />

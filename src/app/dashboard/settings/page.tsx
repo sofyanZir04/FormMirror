@@ -41,7 +41,7 @@ export default function SettingsPage() {
         .eq('id', user.id)
       if (error) throw error
       setSuccess('Profile updated successfully!')
-    } catch (err) {
+    } catch {
       setError('Failed to update profile')
     } finally {
       setLoading(false)

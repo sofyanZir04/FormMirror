@@ -42,7 +42,7 @@ export default function FeedbackPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Thank You!</h2>
               <p className="text-gray-600 mb-6">
-                Your feedback has been submitted successfully. We'll review it and get back to you soon.
+                Your feedback has been submitted successfully. We&apos;ll review it and get back to you soon.
               </p>
               <button
                 onClick={() => setSubmitted(false)}

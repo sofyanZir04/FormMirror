@@ -1,159 +1,175 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase/browser'
+import { Toaster, toast } from 'react-hot-toast'
 
 export default function DemoPage() {
-  const [projectId, setProjectId] = useState('')
-  const [isTracking, setIsTracking] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    message: ''
+  })
+  const [loading, setLoading] = useState(false)
 
-  const startTracking = () => {
-    if (!projectId) return
-
-    const script = document.createElement('script')
-    script.src = '/track.js'
-    script.setAttribute('data-project-id', projectId)
-    script.setAttribute('data-form-selector', '#demo-form')
-    document.head.appendChild(script)
-    setIsTracking(true)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Form submitted! Check your dashboard for tracking data.')
+    setLoading(true)
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    toast.success('Form submitted successfully!')
+    setForm({ name: '', email: '', message: '' })
+    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">FormMirror Demo</h1>
-          
-          {!isTracking ? (
-            <div className="mb-6">
-              <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-2">
-                Enter your Project ID
-              </label>
-              <input
-                type="text"
-                id="projectId"
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                placeholder="Enter project ID from your dashboard"
-                className="w-full"
-              />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
+      <Toaster position="top-right" />
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            FormMirror Demo
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Experience privacy-friendly form analytics in action. This form is being tracked to demonstrate FormMirror&apos;s capabilities.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Demo Form */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Form</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={handleChange}
+                  className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200"
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={handleChange}
+                  className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200"
+                  placeholder="your@email.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  required
+                  value={form.message}
+                  onChange={handleChange}
+                  rows={4}
+                  className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200 resize-none"
+                  placeholder="Your message..."
+                />
+              </div>
+
               <button
-                onClick={startTracking}
-                disabled={!projectId}
-                className="mt-3 w-full btn-primary disabled:opacity-50"
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Start Tracking
+                {loading ? 'Sending...' : 'Send Message'}
               </button>
-            </div>
-          ) : (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-800">
-                ✅ Tracking is active! Fill out the form below to see analytics in your dashboard.
-              </p>
-            </div>
-          )}
+            </form>
+          </div>
 
-          <form id="demo-form" onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="mt-1 w-full"
-                placeholder="Enter your full name"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                className="mt-1 w-full"
-                placeholder="Enter your email"
-              />
+          {/* Analytics Preview */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Live Analytics</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <span className="text-sm font-medium text-blue-900">Form Views</span>
+                  <span className="text-lg font-bold text-blue-600">1</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <span className="text-sm font-medium text-green-900">Field Interactions</span>
+                  <span className="text-lg font-bold text-green-600">0</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                  <span className="text-sm font-medium text-purple-900">Completion Rate</span>
+                  <span className="text-lg font-bold text-purple-600">0%</span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                className="mt-1 w-full"
-                placeholder="Enter your phone number"
-              />
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Privacy Features</h3>
+              <ul className="space-y-3 text-sm text-gray-600">
+                <li className="flex items-start">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span>No cookies or personal data collection</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span>Anonymous user tracking</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span>GDPR compliant by design</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span>No third-party dependencies</span>
+                </li>
+              </ul>
             </div>
+          </div>
+        </div>
 
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={4}
-                className="mt-1 w-full"
-                placeholder="Enter your message"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                Category
-              </label>
-              <select id="category" name="category" className="mt-1 w-full">
-                <option value="">Select a category</option>
-                <option value="general">General Inquiry</option>
-                <option value="support">Support</option>
-                <option value="sales">Sales</option>
-                <option value="feedback">Feedback</option>
-              </select>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="newsletter"
-                name="newsletter"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="newsletter" className="ml-2 block text-sm text-gray-900">
-                Subscribe to newsletter
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full btn-primary"
+        {/* CTA Section */}
+        <div className="text-center mt-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Ready to track your forms?
+          </h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Get started with FormMirror and improve your form conversion rates today.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/auth/register"
+              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-xl hover:shadow-2xl"
             >
-              Submit Form
-            </button>
-          </form>
-
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <h3 className="text-sm font-medium text-blue-900 mb-2">What's being tracked:</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Field focus and blur events</li>
-              <li>• Time spent on each field</li>
-              <li>• Input and change events</li>
-              <li>• Form submission</li>
-              <li>• Form abandonment (if you leave without submitting)</li>
-            </ul>
+              Start Free Trial
+            </a>
+            <a
+              href="/dashboard/upgrade"
+              className="inline-flex items-center px-8 py-4 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-all duration-300"
+            >
+              View Pricing
+            </a>
           </div>
         </div>
       </div>

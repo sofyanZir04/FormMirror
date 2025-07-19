@@ -1,5 +1,8 @@
-import { BarChart3, CheckCircle, Star } from 'lucide-react';
-import Link from 'next/link';
+'use client'
+
+import { useState } from 'react'
+import { Check, Star, Zap, Shield, Users, Clock, BarChart3, Crown } from 'lucide-react'
+import Link from 'next/link'
 
 export default function UpgradePage() {
   return (
@@ -24,21 +27,21 @@ export default function UpgradePage() {
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-4">Free</h2>
             <ul className="space-y-3 text-gray-700 text-sm sm:text-base">
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> 7-day analytics history</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Unlimited forms</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Field-level insights</li>
-              <li className="flex items-center opacity-50"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" /> Email support</li>
-              <li className="flex items-center opacity-50"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" /> Market comparison</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> 7-day analytics history</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Unlimited forms</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Field-level insights</li>
+              <li className="flex items-center opacity-50"><Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" /> Email support</li>
+              <li className="flex items-center opacity-50"><Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" /> Market comparison</li>
             </ul>
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-purple-700 mb-4">Pro</h2>
             <ul className="space-y-3 text-gray-700 text-sm sm:text-base">
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> 90-day analytics history</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Unlimited forms & events</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Advanced segmentation</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Priority email & chat support</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Market comparison & benchmarks</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> 90-day analytics history</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Unlimited forms & events</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Advanced segmentation</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Priority email & chat support</li>
+              <li className="flex items-center"><Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2 flex-shrink-0" /> Market comparison & benchmarks</li>
             </ul>
           </div>
         </div>
