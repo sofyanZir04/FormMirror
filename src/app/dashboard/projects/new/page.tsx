@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/browser'
 import { useRouter } from 'next/navigation'
 import { Toaster, toast } from 'react-hot-toast'
 import Link from 'next/link'
-import { Plus, ArrowLeft, Settings, Code, BarChart3 } from 'lucide-react'
+import { Plus, ArrowLeft, Code, BarChart3 } from 'lucide-react'
 
 export default function NewProjectPage() {
   const { user } = useAuth()

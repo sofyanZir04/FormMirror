@@ -85,7 +85,7 @@ export default function ProjectDetailPage() {
       fetchProject()
       fetchEvents()
     }
-  }, [id, user])
+  }, [id, user, fetchProject, fetchEvents])
 
   const fetchProject = async () => {
     try {

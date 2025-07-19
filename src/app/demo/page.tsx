@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/browser'
 import { Toaster, toast } from 'react-hot-toast'
 
 export default function DemoPage() {

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { Check, Star, Zap, Shield, Users, Clock, BarChart3, Crown } from 'lucide-react'
+import { Check, Star } from 'lucide-react'
 import Link from 'next/link'
 
 export default function UpgradePage() {
