@@ -11,9 +11,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-sm">FM</span>
-              </div>
+              <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
               <span className="text-xl font-bold text-gray-900">FormMirror</span>
             </div>
             <div className="flex items-center space-x-4">
@@ -406,9 +404,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center mb-4">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                  <span className="text-white font-bold text-sm">FM</span>
-                </div>
+                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
                 <span className="text-xl font-bold">FormMirror</span>
               </div>
               <p className="text-gray-400">

@@ -52,9 +52,9 @@ export default function DashboardLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <Link href="/dashboard" className="flex items-center">
-                <BarChart3 className="h-8 w-8 text-blue-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">FormMirror</span>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} />
+                <span className="text-xl font-bold text-gray-900">FormMirror</span>
               </Link>
             </div>
             

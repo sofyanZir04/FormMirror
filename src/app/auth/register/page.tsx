@@ -22,9 +22,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center">
-              <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
-                <span className="text-white font-bold text-lg">FM</span>
-              </div>
+              <img src="/logo.svg" alt="FormMirror logo" width={48} height={48} className="mr-4" />
               <span className="text-2xl font-bold text-gray-900">FormMirror</span>
             </Link>
           </div>
