@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://formmirror.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /api/
+
+# Allow important pages
+Allow: /demo
+Allow: /privacy-policy
+Allow: /terms 

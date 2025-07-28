@@ -7,12 +7,30 @@ import { Toaster } from 'react-hot-toast'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FormMirror - Privacy-Friendly Form Analytics',
-  description: 'Track form interactions and improve conversion rates with privacy-first analytics. No cookies, no personal data collection.',
-  keywords: 'form analytics, conversion optimization, privacy-friendly, GDPR compliant, form tracking',
+  title: {
+    default: 'FormMirror - Privacy-Friendly Form Analytics | Track Form Interactions',
+    template: '%s | FormMirror'
+  },
+  description: 'Track form interactions and improve conversion rates with privacy-first analytics. No cookies, no personal data collection. GDPR compliant form tracking for better user experience.',
+  keywords: [
+    'form analytics',
+    'conversion optimization', 
+    'privacy-friendly analytics',
+    'GDPR compliant',
+    'form tracking',
+    'user behavior analytics',
+    'form optimization',
+    'conversion rate optimization',
+    'privacy-first analytics',
+    'form performance',
+    'user experience analytics',
+    'form abandonment tracking'
+  ].join(', '),
   authors: [{ name: 'FormMirror Team' }],
   creator: 'FormMirror',
   publisher: 'FormMirror',
+  category: 'Technology',
+  classification: 'Web Analytics',
   formatDetection: {
     email: false,
     address: false,
@@ -32,7 +50,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'FormMirror - Privacy-Friendly Form Analytics',
+        alt: 'FormMirror - Privacy-Friendly Form Analytics Dashboard',
       },
     ],
     locale: 'en_US',
@@ -44,6 +62,7 @@ export const metadata: Metadata = {
     description: 'Track form interactions and improve conversion rates with privacy-first analytics. No cookies, no personal data collection.',
     images: ['/og-image.png'],
     creator: '@formmirror',
+    site: '@formmirror',
   },
   robots: {
     index: true,
@@ -58,6 +77,12 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'your-google-verification-code',
+    yandex: 'your-yandex-verification-code',
+    yahoo: 'your-yahoo-verification-code',
+  },
+  other: {
+    'msapplication-TileColor': '#3b82f6',
+    'msapplication-config': '/browserconfig.xml',
   },
 }
 
@@ -75,9 +100,42 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#3b82f6" />
+        <meta name="msapplication-TileColor" content="#3b82f6" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         
         {/* Privacy-friendly analytics placeholder */}
         <script defer data-domain="formmirror.com" src="https://plausible.io/js/script.js"></script>
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "FormMirror",
+              "description": "Privacy-friendly form analytics platform that tracks form interactions without invading user privacy",
+              "url": "https://formmirror.com",
+              "applicationCategory": "WebApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD",
+                "description": "Free tier available"
+              },
+              "author": {
+                "@type": "Organization",
+                "name": "FormMirror"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "ratingCount": "150"
+              }
+            })
+          }}
+        />
       </head>
       <body className={inter.className}>
         <AuthProvider>

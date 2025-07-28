@@ -1,197 +1,191 @@
-'use client';
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Mail, Lock, User, ArrowRight, BarChart3, Shield, Zap } from 'lucide-react'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/browser';
-import { Toaster, toast } from 'react-hot-toast';
-import Link from 'next/link';
-import { BarChart3, Users, Clock, TrendingUp } from 'lucide-react';
+export const metadata: Metadata = {
+  title: 'Sign Up - FormMirror',
+  description: 'Create your free FormMirror account and start tracking form interactions with privacy-first analytics.',
+  keywords: 'sign up, register, formmirror signup, free form analytics, privacy-friendly analytics signup',
+  openGraph: {
+    title: 'Sign Up - FormMirror',
+    description: 'Create your free FormMirror account and start tracking form interactions.',
+    url: 'https://formmirror.com/auth/register',
+  },
+}
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const unwantedButtons = document.querySelectorAll('button[type="button"][style]');
-    unwantedButtons.forEach((btn) => btn.remove());
-  }, []);
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-          emailRedirectTo: `${window.location.origin}/auth/verify`,
-        },
-      });
-      if (error) throw error;
-      // Set trial fields in profile
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.id) {
-        await supabase
-          .from('profiles')
-          .update({
-            trial_start: new Date().toISOString(),
-            trial_active: true
-          })
-          .eq('id', userData.user.id);
-      }
-      toast.success('Registration successful! Please check your email to verify.', { id: 'register-success' });
-      router.push('/auth/verify');
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'message' in error) {
-        toast.error((error as { message: string }).message, { id: 'register-error' });
-      } else {
-        toast.error('An unknown error occurred.', { id: 'register-error' });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <Toaster position="top-right" />
-      {/* Left: Register Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center py-12 px-6 bg-white shadow-2xl z-10 relative">
-        <div className="w-full max-w-md mx-auto">
-          <div className="flex justify-center mb-6">
-            <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">FM</span>
-            </div>
-          </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-2">Create your account</h2>
-          <p className="text-center text-sm text-gray-600 mb-8">
-            Or{' '}
-            <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-              sign in to your existing account
+    <div className="min-h-screen flex">
+      {/* Form Section */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex items-center">
+              <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                <span className="text-white font-bold text-lg">FM</span>
+              </div>
+              <span className="text-2xl font-bold text-gray-900">FormMirror</span>
             </Link>
-          </p>
-          <form className="space-y-6" onSubmit={handleRegister}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 text-base transition-all"
-                  placeholder="Enter your full name"
-                />
-              </div>
+          </div>
+
+          {/* Form */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
+              <p className="text-gray-600">Start tracking form interactions today</p>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 text-base transition-all"
-                  placeholder="Enter your email"
-                />
+
+            <form className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter your full name"
+                  />
+                </div>
               </div>
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 text-base transition-all"
-                  placeholder="Create a password"
-                />
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter your email"
+                  />
+                </div>
               </div>
-            </div>
-            <div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Create a password"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  required
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-500">
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
+
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-lg"
               >
-                {loading ? 'Creating account...' : 'Create account'}
+                Create Account
               </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+                  Sign in
+                </Link>
+              </p>
             </div>
-          </form>
-          <div className="mt-8 text-center text-gray-500 text-xs">
-            &copy; {new Date().getFullYear()} FormMirror. All rights reserved.
           </div>
         </div>
       </div>
-      {/* Right: App Preview */}
-      <div className="hidden md:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative z-10 w-full max-w-md mx-auto p-10">
-          <div className="mb-8 text-center">
-            <h3 className="text-2xl font-bold text-white mb-2">See Your Analytics in Action</h3>
-            <p className="text-blue-100 text-base">Privacy-first, actionable insights for every form.</p>
-          </div>
-          <div className="bg-white/90 rounded-2xl shadow-2xl p-6 flex flex-col gap-6">
-            <div className="flex gap-4">
-              <div className="flex-1 bg-gradient-to-r from-blue-500 to-blue-400 rounded-xl p-4 flex items-center text-white shadow">
-                <BarChart3 className="h-7 w-7 mr-3" />
-                <div>
-                  <div className="text-lg font-bold">12</div>
-                  <div className="text-xs opacity-80">Total Projects</div>
-                </div>
+
+      {/* Preview Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10 flex items-center justify-center px-8">
+          <div className="text-center text-white">
+            <div className="mb-8">
+              <div className="h-20 w-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <BarChart3 className="h-10 w-10 text-white" />
               </div>
-              <div className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-400 rounded-xl p-4 flex items-center text-white shadow">
-                <Users className="h-7 w-7 mr-3" />
-                <div>
-                  <div className="text-lg font-bold">2,340</div>
-                  <div className="text-xs opacity-80">Total Events</div>
-                </div>
-              </div>
+              <h2 className="text-4xl font-bold mb-4">Join FormMirror Today</h2>
+              <p className="text-xl text-blue-100 max-w-md">
+                Start tracking form interactions and improve your conversion rates with privacy-first analytics
+              </p>
             </div>
-            <div className="flex gap-4">
-              <div className="flex-1 bg-gradient-to-r from-green-500 to-teal-400 rounded-xl p-4 flex items-center text-white shadow">
-                <Clock className="h-7 w-7 mr-3" />
-                <div>
-                  <div className="text-lg font-bold">8s</div>
-                  <div className="text-xs opacity-80">Avg Time on Forms</div>
+
+            {/* Mock Dashboard Preview */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-sm mx-auto">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-white/20 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 text-green-300 mr-2" />
+                    <span className="text-sm text-blue-100">Privacy</span>
+                  </div>
+                  <p className="text-2xl font-bold">100%</p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <Zap className="h-4 w-4 text-yellow-300 mr-2" />
+                    <span className="text-sm text-blue-100">Setup</span>
+                  </div>
+                  <p className="text-2xl font-bold">2min</p>
                 </div>
               </div>
-              <div className="flex-1 bg-gradient-to-r from-pink-500 to-red-400 rounded-xl p-4 flex items-center text-white shadow">
-                <TrendingUp className="h-7 w-7 mr-3" />
-                <div>
-                  <div className="text-lg font-bold">+18%</div>
-                  <div className="text-xs opacity-80">Conversion Rate</div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                  <span className="text-blue-100">Free forever plan</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                  <span className="text-blue-100">No credit card required</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                  <span className="text-blue-100">Instant access</span>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 text-center">
-              <span className="inline-block bg-blue-100 text-blue-700 rounded-full px-4 py-1 text-xs font-semibold">Live Demo Preview</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 } 
