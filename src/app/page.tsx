@@ -1,17 +1,18 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Shield, BarChart3, Zap, Users, CheckCircle, Star, TrendingUp, Eye, Clock } from 'lucide-react'
 
-export default function HomePage() {
-  return (
+export default function HomePage() {  
+    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
+              <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
               <span className="text-xl font-bold text-gray-900">FormMirror</span>
             </div>
             <div className="flex items-center space-x-4">
@@ -27,48 +28,48 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </nav>
+              </nav>
 
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6">
             Privacy-Friendly
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
               Form Analytics
-            </span>
-          </h1>
+              </span>
+            </h1>
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Track form interactions and improve conversion rates without invading user privacy. 
             No cookies, no personal data collection.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              href="/auth/register"
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link 
+                href="/auth/register" 
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-xl hover:shadow-2xl"
-            >
-              Start Free Trial
+              >
+                Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+              </Link>
             <Link
               href="/demo"
               className="inline-flex items-center px-8 py-4 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-all duration-300"
             >
               View Demo
             </Link>
-          </div>
-          
+            </div>
+            
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
-            <div className="flex items-center">
+              <div className="flex items-center">
               <Shield className="h-4 w-4 mr-2 text-green-500" />
               GDPR Compliant
-            </div>
-            <div className="flex items-center">
+              </div>
+              <div className="flex items-center">
               <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
               No Cookies Required
-            </div>
-            <div className="flex items-center">
+              </div>
+              <div className="flex items-center">
               <Users className="h-4 w-4 mr-2 text-green-500" />
               Trusted by 1000+ Users
             </div>
@@ -87,7 +88,7 @@ export default function HomePage() {
               Get actionable insights into your form performance while respecting user privacy
             </p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center">
@@ -215,11 +216,11 @@ export default function HomePage() {
               Start free, upgrade when you need more features
             </p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
             <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
               <div className="text-4xl font-bold text-gray-900 mb-6">
                 $0
                 <span className="text-lg font-normal text-gray-500">/month</span>
@@ -242,8 +243,8 @@ export default function HomePage() {
                   Basic support
                 </li>
               </ul>
-              <Link
-                href="/auth/register"
+              <Link 
+                href="/auth/register" 
                 className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition"
               >
                 Get Started Free
@@ -257,7 +258,7 @@ export default function HomePage() {
                   Most Popular
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                <h3 className="text-2xl font-bold mb-2">Pro</h3>
               <div className="text-4xl font-bold mb-6">
                 $29
                 <span className="text-lg font-normal opacity-80">/month</span>
@@ -284,7 +285,7 @@ export default function HomePage() {
                   Market comparison
                 </li>
               </ul>
-              <Link
+              <Link 
                 href="/dashboard/upgrade"
                 className="w-full bg-white text-blue-600 py-3 px-6 rounded-lg font-semibold hover:bg-gray-100 transition"
               >
@@ -306,7 +307,7 @@ export default function HomePage() {
               See what our users are saying about FormMirror
             </p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center mb-4">
@@ -381,8 +382,8 @@ export default function HomePage() {
             Join thousands of developers and marketers who trust FormMirror for privacy-friendly form analytics.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth/register"
+            <Link 
+              href="/auth/register" 
               className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 shadow-xl"
             >
               Start Free Trial
@@ -404,7 +405,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center mb-4">
-                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
+                <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
                 <span className="text-xl font-bold">FormMirror</span>
               </div>
               <p className="text-gray-400">

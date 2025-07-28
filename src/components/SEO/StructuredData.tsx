@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 
 interface StructuredDataProps {
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 export default function StructuredData({ data }: StructuredDataProps) {

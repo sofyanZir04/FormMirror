@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, BarChart3, Eye, Clock, MousePointer } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowRight, BarChart3, Eye, MousePointer } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Live Demo - FormMirror Analytics',
@@ -21,7 +22,7 @@ export default function DemoPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
+              <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
               <span className="text-xl font-bold text-gray-900">FormMirror</span>
             </div>
             <div className="flex items-center space-x-4">

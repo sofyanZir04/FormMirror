@@ -61,7 +61,7 @@ export default function NewProjectPage() {
     }
   }
 
-  return (
+    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 py-8">
       <Toaster position="top-right" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,7 +70,7 @@ export default function NewProjectPage() {
           <Link href="/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
-          </Link>
+            </Link>
           <div className="flex items-center">
             <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
               <Plus className="h-6 w-6 text-blue-600" />
@@ -88,33 +88,33 @@ export default function NewProjectPage() {
             <div className="bg-white rounded-xl shadow-lg p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Project Name */}
-                <div>
+          <div>
                   <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
                     Project Name *
-                  </label>
-                  <input
+            </label>
+            <input
                     id="name"
                     name="name"
-                    type="text"
-                    required
+              type="text"
+              required
                     value={form.name}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200"
                     placeholder="My Contact Form"
                   />
-                </div>
+          </div>
 
                 {/* Description */}
-                <div>
+          <div>
                   <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
                     Description
-                  </label>
-                  <textarea
-                    id="description"
+            </label>
+            <textarea
+              id="description"
                     name="description"
                     value={form.description}
                     onChange={handleChange}
-                    rows={3}
+              rows={3}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200 resize-none"
                     placeholder="Track user behavior on our main contact form"
                   />
@@ -134,41 +134,41 @@ export default function NewProjectPage() {
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200"
                     placeholder="https://example.com"
                   />
-                </div>
+          </div>
 
                 {/* Form Selector */}
-                <div>
+          <div>
                   <label htmlFor="form_selector" className="block text-sm font-semibold text-gray-700 mb-2">
                     Form Selector *
-                  </label>
-                  <input
+            </label>
+            <input
                     id="form_selector"
                     name="form_selector"
-                    type="text"
-                    required
+              type="text"
+              required
                     value={form.form_selector}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200"
                     placeholder="form, .contact-form, #signup-form"
-                  />
+            />
                   <p className="mt-2 text-sm text-gray-500">
                     CSS selector to identify your form. Default is &quot;form&quot; for all forms.
                   </p>
-                </div>
+          </div>
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
+            <button
+              type="submit"
+              disabled={loading}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
+            >
                     {loading ? 'Creating Project...' : 'Create Project'}
-                  </button>
-                </div>
-              </form>
-            </div>
+            </button>
           </div>
+        </form>
+      </div>
+    </div>
 
           {/* Sidebar */}
           <div className="space-y-6">

@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { BarChart3, Plus, Settings, LogOut, User, Home, FolderOpen, Star, MessageSquare } from 'lucide-react'
+import Image from 'next/image'
+import { Plus, Settings, LogOut, User, Home, FolderOpen, Star, MessageSquare } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -53,7 +54,7 @@ export default function DashboardLayout({
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <Link href="/dashboard" className="flex items-center gap-2">
-                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} />
+                <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} />
                 <span className="text-xl font-bold text-gray-900">FormMirror</span>
               </Link>
             </div>

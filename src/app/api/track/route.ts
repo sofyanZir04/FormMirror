@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
 
   // CORS headers
   const headers = {
-    'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Origin': origin || '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
   }
 
   // Handle preflight requests
@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase
       .from('form_events')
       .insert({
-        project_id,
-        event_type,
+      project_id,
+      event_type,
         field_name: field_name || null,
         value: value || null,
-        duration: duration || null,
-        session_id,
+      duration: duration || null,
+      session_id,
         user_id: null, // Anonymous tracking
       })
 

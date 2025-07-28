@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Terms of Service - FormMirror',
@@ -21,7 +22,7 @@ export default function TermsPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
+                <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
                 <span className="text-xl font-bold text-gray-900">FormMirror</span>
               </Link>
             </div>
@@ -42,7 +43,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 mb-4">
-                By accessing and using FormMirror ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using FormMirror (&quot;the Service&quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
 

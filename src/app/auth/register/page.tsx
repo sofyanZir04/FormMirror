@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, Lock, User, ArrowRight, BarChart3, Shield, Zap } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Lock, User, BarChart3, Shield, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Sign Up - FormMirror',
@@ -22,7 +23,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center">
-              <img src="/logo.svg" alt="FormMirror logo" width={48} height={48} className="mr-4" />
+              <Image src="/logo.svg" alt="FormMirror logo" width={48} height={48} className="mr-4" />
               <span className="text-2xl font-bold text-gray-900">FormMirror</span>
             </Link>
           </div>

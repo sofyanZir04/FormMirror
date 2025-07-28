@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy - FormMirror',
@@ -21,7 +22,7 @@ export default function PrivacyPolicyPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <img src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
+                <Image src="/logo.svg" alt="FormMirror logo" width={32} height={32} className="mr-3" />
                 <span className="text-xl font-bold text-gray-900">FormMirror</span>
               </Link>
             </div>
@@ -42,7 +43,7 @@ export default function PrivacyPolicyPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Introduction</h2>
               <p className="text-gray-700 mb-4">
-                FormMirror ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our privacy-friendly form analytics service.
+                FormMirror (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our privacy-friendly form analytics service.
               </p>
               <p className="text-gray-700">
                 Our service is designed with privacy-first principles, meaning we collect minimal data and never track personal information or use cookies for tracking purposes.
@@ -94,7 +95,7 @@ export default function PrivacyPolicyPage() {
                 <li>No personal data collection</li>
                 <li>No cross-site tracking</li>
                 <li>No third-party data sharing</li>
-                <li>Right to data deletion (though we don't store personal data)</li>
+                <li>Right to data deletion (though we don&apos;t store personal data)</li>
                 <li>Transparent data practices</li>
               </ul>
             </section>
@@ -128,7 +129,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Rights</h2>
               <p className="text-gray-700 mb-4">Under GDPR and other privacy laws, you have the right to:</p>
               <ul className="list-disc pl-6 text-gray-700 mb-4">
-                <li>Access your data (though we don't collect personal data)</li>
+                <li>Access your data (though we don&apos;t collect personal data)</li>
                 <li>Request data deletion</li>
                 <li>Object to data processing</li>
                 <li>Data portability</li>
@@ -140,7 +141,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Children&apos;s Privacy</h2>
               <p className="text-gray-700">
                 FormMirror is not intended for use by children under 13 years of age. We do not knowingly collect any personal information from children under 13.
               </p>
@@ -149,7 +150,7 @@ export default function PrivacyPolicyPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Changes to This Policy</h2>
               <p className="text-gray-700">
-                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 
