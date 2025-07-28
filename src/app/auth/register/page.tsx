@@ -33,65 +33,65 @@ export default function RegisterPage() {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
               <p className="text-gray-600">Start tracking form interactions today</p>
-            </div>
+      </div>
 
             <form className="space-y-6">
-              <div>
+            <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
+                Full Name
+              </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
+                <input
                     type="text"
-                    id="name"
-                    name="name"
-                    required
+                  id="name"
+                  name="name"
+                  required
                     className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter your full name"
-                  />
-                </div>
+                  placeholder="Enter your full name"
+                />
               </div>
+            </div>
 
-              <div>
+            <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
-                </label>
+              </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
+                <input
                     type="email"
-                    id="email"
-                    name="email"
-                    required
+                  id="email"
+                  name="email"
+                  required
                     className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter your email"
-                  />
-                </div>
+                  placeholder="Enter your email"
+                />
               </div>
+            </div>
 
-              <div>
+            <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
+                Password
+              </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
+                <input
                     type="password"
-                    id="password"
-                    name="password"
-                    required
+                  id="password"
+                  name="password"
+                  required
                     className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Create a password"
-                  />
-                </div>
+                  placeholder="Create a password"
+                />
               </div>
+            </div>
 
               <div className="flex items-center">
                 <input
@@ -131,7 +131,7 @@ export default function RegisterPage() {
             </div>
           </div>
         </div>
-      </div>
+              </div>
 
       {/* Preview Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 relative overflow-hidden">

@@ -69,58 +69,58 @@ export default function DemoPage() {
               </p>
               
               <form className="space-y-6">
-                <div>
+            <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
+                Full Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-                
-                <div>
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Enter your email"
-                  />
-                </div>
-                
-                <div>
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
                   <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
                     Company
-                  </label>
-                  <input
+              </label>
+              <input
                     type="text"
                     id="company"
                     name="company"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="Enter your company name"
-                  />
-                </div>
-                
-                <div>
+              />
+            </div>
+
+            <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
+                Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="Tell us about your project..."
-                  />
-                </div>
-                
+              />
+            </div>
+
                 <button
                   type="submit"
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-lg"
@@ -149,7 +149,7 @@ export default function DemoPage() {
                     <p className="text-2xl font-bold text-gray-900">1,247</p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4">
-                    <div className="flex items-center">
+            <div className="flex items-center">
                       <MousePointer className="h-5 w-5 text-green-600 mr-2" />
                       <span className="text-sm text-gray-600">Interactions</span>
                     </div>
@@ -191,8 +191,8 @@ export default function DemoPage() {
                 </div>
               </div>
             </div>
-          </div>
-          
+            </div>
+
           {/* CTA Section */}
           <div className="text-center mt-16">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
