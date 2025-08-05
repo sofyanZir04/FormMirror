@@ -16,6 +16,9 @@ export default function HomePage() {
               <span className="text-xl font-bold text-gray-900">FormMirror</span>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/help" className="text-gray-600 hover:text-gray-900 transition">
+                Help
+              </Link>
               <Link href="/auth/login" className="text-gray-600 hover:text-gray-900 transition">
                 Sign In
               </Link>
@@ -42,7 +45,7 @@ export default function HomePage() {
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Track form interactions and improve conversion rates without invading user privacy. 
             No cookies, no personal data collection.
-          </p>
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link 
                 href="/auth/register" 
@@ -54,7 +57,7 @@ export default function HomePage() {
             <Link
               href="/demo"
               className="inline-flex items-center px-8 py-4 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-all duration-300"
-            >
+              >
               View Demo
             </Link>
             </div>
@@ -71,7 +74,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center">
               <Users className="h-4 w-4 mr-2 text-green-500" />
-              Trusted by 1000+ Users
+              Trusted by 2,500+ Users
             </div>
           </div>
         </div>
@@ -98,7 +101,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Privacy-First Design</h3>
               <p className="text-gray-600">
                 No cookies, no personal data collection. Track user behavior anonymously while maintaining full GDPR compliance.
-              </p>
+                </p>
             </div>
 
             {/* Feature 2 */}
@@ -109,7 +112,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Real-Time Analytics</h3>
               <p className="text-gray-600">
                 See how users interact with your forms in real-time. Track field focus, input patterns, and completion rates.
-              </p>
+                </p>
             </div>
 
             {/* Feature 3 */}
@@ -120,7 +123,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Easy Integration</h3>
               <p className="text-gray-600">
                 Simple one-line script installation. Works with any website framework - WordPress, React, Vue, and more.
-              </p>
+                </p>
             </div>
 
             {/* Feature 4 */}
@@ -131,7 +134,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Field-Level Insights</h3>
               <p className="text-gray-600">
                 Understand which fields cause friction, how long users spend on each field, and where they abandon forms.
-              </p>
+                </p>
             </div>
 
             {/* Feature 5 */}
@@ -142,7 +145,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Time Tracking</h3>
               <p className="text-gray-600">
                 Measure how long users spend on each field and identify bottlenecks in your form completion process.
-              </p>
+                </p>
             </div>
 
             {/* Feature 6 */}
@@ -425,9 +428,10 @@ export default function HomePage() {
             <div>
               <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400">
+                <li><Link href="/help" className="hover:text-white transition">Help & Docs</Link></li>
                 <li><Link href="/dashboard/feedback" className="hover:text-white transition">Contact</Link></li>
-                <li><Link href="/dashboard/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
-                <li><Link href="/dashboard/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                <li><Link href="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
               </ul>
             </div>
 

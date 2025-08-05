@@ -26,6 +26,12 @@ export default function DemoPage() {
               <span className="text-xl font-bold text-gray-900">FormMirror</span>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/video-demo" className="text-gray-600 hover:text-gray-900 transition">
+                Video Demo
+              </Link>
+              <Link href="/help" className="text-gray-600 hover:text-gray-900 transition">
+                Help
+              </Link>
               <Link href="/auth/login" className="text-gray-600 hover:text-gray-900 transition">
                 Sign In
               </Link>

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
+import Script from 'next/script'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -98,6 +99,20 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/logo.svg" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#3b82f6" />
+        
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-M7FHX3FD6N"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-M7FHX3FD6N');
+          `}
+        </Script>
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         
