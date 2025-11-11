@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin')
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('📊 Received tracking data:', body)
 
-    const { project_id, event_type, field_name, value, duration, session_id } = body
+    const { project_id, event_type, field_name, duration, session_id } = body
 
     if (!project_id || !event_type || !session_id) {
       console.log('❌ Missing required fields')
@@ -31,17 +31,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Insert event into database
+    // Insert event into database using service role client
+    const supabase = createServerSupabaseClient()
     const { error } = await supabase
       .from('form_events')
       .insert({
-      project_id,
-      event_type,
-        field_name: field_name || null,
-        value: value || null,
-      duration: duration || null,
-      session_id,
-        user_id: null, // Anonymous tracking
+        project_id,
+        event_type,
+        field_name: field_name || '',
+        duration: duration || null,
+        session_id,
+        timestamp: new Date().toISOString(),
       })
 
     if (error) {

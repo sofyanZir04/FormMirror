@@ -1,239 +1,351 @@
 'use client'
 
-import { useEffect, useState, useTransition, useMemo } from 'react'
+import { useEffect, useState, useTransition, useMemo, useCallback, memo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-// import { supabase } from '@/lib/supabase'
-import {supabase} from '@/lib/supabase/browser'
+import { supabase } from '@/lib/supabase/browser'
 import { Project } from '@/types/database'
 import Link from 'next/link'
-import { Plus, BarChart3, Users, Clock, UserCircle } from 'lucide-react'
+import { Plus, BarChart3, Users, Clock, Code2, Shield, Zap, CheckCircle, ArrowRight, X } from 'lucide-react'
+import { UserPlanBadge } from '@/components/UserPlanBadge'
+import { PlanUsage } from '@/components/PlanUsage'
+import { useUserPlan } from '@/hooks/useUserPlan'
+import TrackingCodeModal from '@/components/TrackingCodeModal'
 
-function StatCard({ icon, label, value, gradient }: { icon: React.ReactNode, label: string, value: string | number, gradient: string }) {
+const StatCard = memo(function StatCard({ icon, label, value, gradient }: { icon: React.ReactNode, label: string, value: string | number, gradient: string }) {
   return (
-    <div className={`rounded-xl shadow-lg p-6 flex items-center ${gradient} text-white`}>
-      <div className="flex-shrink-0 mr-4">{icon}</div>
-      <div>
-        <div className="text-lg font-bold">{value}</div>
-        <div className="text-sm opacity-80">{label}</div>
+    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-6 text-white shadow-xl border border-white/20`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm opacity-90">{label}</p>
+          <p className="text-3xl font-black mt-1">{value}</p>
+        </div>
+        <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
+          {icon}
+        </div>
       </div>
     </div>
   )
-}
+})
 
-function ProjectCard({ project }: { project: Project }) {
+const ProjectCard = memo(function ProjectCard({ project, onShowTrackingCode }: { project: Project, onShowTrackingCode: (project: Project) => void }) {
+  const handleTrackingCodeClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onShowTrackingCode(project)
+  }
+
   return (
-    <Link href={`/dashboard/projects/${project.id}`} className="block group">
-      <div className="rounded-xl border border-blue-100 bg-white shadow-md hover:shadow-xl transition p-5 h-full flex flex-col justify-between">
-        <div>
-          <div className="flex items-center mb-2">
-            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-              <BarChart3 className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition">{project.name}</div>
-              <div className="text-xs text-gray-500">{project.description || 'No description'}</div>
-            </div>
+    <Link href={`/dashboard/projects/${project.id}`} className="group block">
+      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 h-full flex flex-col">
+        <div className="flex items-center mb-4">
+          <div className="h-12 w-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+            <BarChart3 className="h-7 w-7 text-white" />
           </div>
-          <div className="text-xs text-gray-400 mb-2">Created {new Date(project.created_at).toLocaleDateString()}</div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg group-hover:text-violet-300 transition">{project.name}</h3>
+            <p className="text-sm text-gray-300">{project.description || 'No description'}</p>
+          </div>
         </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="inline-block px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded">View Details</span>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-xs text-gray-400">
+            Created {new Date(project.created_at).toLocaleDateString()}
+          </span>
+          <button
+            onClick={handleTrackingCodeClick}
+            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-xl text-xs font-medium hover:bg-emerald-500/30 transition"
+          >
+            <Code2 className="h-3.5 w-3.5" />
+            Get Code
+          </button>
         </div>
       </div>
     </Link>
   )
-}
+})
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const { isPro, loading: planLoading } = useUserPlan()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalEvents: 0,
-    avgTimeOnForms: 0,
-    eventBreakdown: { focus: 0, blur: 0, input: 0, submit: 0, abandon: 0 },
+    avgTimeOnForms: '—',
   })
   const [isPending, startTransition] = useTransition()
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('7d')
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [showTrackingModal, setShowTrackingModal] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
-  useEffect(() => {
-    if (user) {
-      fetchProjects()
-    }
-    // eslint-disable-next-line
-  }, [user])
-
-  useEffect(() => {
-    if (user && dateRange !== '7d') {
-      setShowUpgrade(true)
-      setDateRange('7d')
-    }
-  }, [dateRange, user])
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
+    if (!user?.id) return
     setLoading(true)
     try {
-      const { data: projectsData, error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+
       if (error) throw error
-      startTransition(() => {
-        setProjects(projectsData || [])
-      })
-      // Fetch stats after projects are loaded
-      fetchStats(projectsData || [])
+      setProjects(data || [])
+      setStats(prev => ({ ...prev, totalProjects: data?.length || 0 }))
     } catch (error) {
-      console.error('Error fetching projects:', error)
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
 
-  const fetchStats = async (projectsList: Project[]) => {
-    try {
-      // Get total projects
-      const { count: projectCount } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
+  useEffect(() => {
+    if (user?.id) fetchProjects()
+  }, [user?.id, fetchProjects])
 
-      // Get total events (last 7 days for free tier)
-      const dateFilter = new Date()
-      dateFilter.setDate(dateFilter.getDate() - 7)
-      const { count: eventCount, data: events } = await supabase
-        .from('form_events')
-        .select('*', { count: 'exact', head: false })
-        .in('project_id', projectsList.map(p => p.id))
-        .gte('created_at', dateFilter.toISOString())
-
-      // Calculate average time on forms (simplified)
-      const avgTime = events?.length 
-        ? events.reduce((sum, event) => sum + (event.duration || 0), 0) / events.length
-        : 0
-
-      // Event breakdown
-      const eventBreakdown = { focus: 0, blur: 0, input: 0, submit: 0, abandon: 0 }
-      events?.forEach(e => { if (eventBreakdown[e.event_type as keyof typeof eventBreakdown] !== undefined) eventBreakdown[e.event_type as keyof typeof eventBreakdown]++ })
-
-      startTransition(() => {
-        setStats({
-          totalProjects: projectCount || 0,
-          totalEvents: eventCount || 0,
-          avgTimeOnForms: Math.round(avgTime / 1000),
-          eventBreakdown,
-        })
-      })
-    } catch (error) {
-      console.error('Error fetching stats:', error)
+  useEffect(() => {
+    if (dateRange !== '7d' && !isPro && !planLoading) {
+      setShowUpgrade(true)
+      setDateRange('7d')
+    } else {
+      setShowUpgrade(false)
     }
+  }, [dateRange, isPro, planLoading])
+
+  const handleShowTrackingCode = (project: Project) => {
+    setSelectedProject(project)
+    setShowTrackingModal(true)
   }
 
   const memoizedProjects = useMemo(() => projects, [projects])
 
   if (loading || isPending) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-emerald-400 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/80">Loading your dashboard...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 pb-16">
-      {/* Hero Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome back{user?.email ? `, ${user.email}` : ''}!</h1>
-          <p className="text-lg text-gray-600">Your privacy-friendly form analytics dashboard</p>
-        </div>
-        <div className="flex items-center mt-4 md:mt-0">
-          <UserCircle className="h-12 w-12 text-blue-400" />
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 text-white pb-24">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-black mb-2">
+              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+            </h1>
+            <p className="text-lg text-gray-300">Your privacy-first analytics hub</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <UserPlanBadge />
+            <div className="h-12 w-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <span className="text-xl font-black">
+                {/* {user?.email?.[0]?.toUpperCase()} */}
+                {user.email.match(/[a-zA-Z]/)?.[0]?.toUpperCase() || 'U'}
 
-      {/* Date Range Selector & Upgrade Prompt */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between mb-6">
-        <div className="text-lg font-semibold text-gray-700">Analytics</div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="date-range" className="text-sm font-medium text-gray-600 mr-2">Time Range:</label>
-          <select
-            id="date-range"
-            value={dateRange}
-            onChange={e => setDateRange(e.target.value as '7d' | '30d' | '90d')}
-            className="border border-blue-200 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm px-3 py-2 bg-white text-gray-700 hover:border-blue-400 transition"
-          >
-            <option value="7d">Last 7 days (Free)</option>
-            <option value="30d">Last 30 days (Pro)</option>
-            <option value="90d">Last 90 days (Pro)</option>
-          </select>
-        </div>
-      </div>
-      {showUpgrade && (
-        <div className="max-w-2xl mx-auto mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-900 text-center">
-          <b>Upgrade to Pro</b> to unlock 30/90 day analytics and more features!
-          <a href="#pricing" className="ml-2 inline-block px-4 py-1 rounded bg-purple-600 text-white font-semibold hover:bg-purple-700 transition">See Pro Plans</a>
-        </div>
-      )}
-      {/* Event Breakdown Bar */}
-      <div className="max-w-2xl mx-auto mb-10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-gray-700">User Behavior Breakdown (last 7 days)</span>
-        </div>
-        <div className="flex gap-2 h-6">
-          {(Object.entries(stats.eventBreakdown) as ["focus"|"blur"|"input"|"submit"|"abandon", number][]).map(([type, count]) => (
-            <div key={type} className="flex-1 flex flex-col items-center">
-              <div className={`h-4 w-full rounded ${type === 'focus' ? 'bg-blue-400' : type === 'blur' ? 'bg-green-400' : type === 'input' ? 'bg-yellow-400' : type === 'submit' ? 'bg-purple-400' : 'bg-red-400'}`} style={{ width: `${Math.max(5, count)}%` }}></div>
-              <span className="text-xs text-gray-600 mt-1 capitalize">{type} ({count})</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        <StatCard icon={<BarChart3 className="h-7 w-7" />} label="Total Projects" value={stats.totalProjects} gradient="bg-gradient-to-r from-blue-500 to-blue-400" />
-        <StatCard icon={<Users className="h-7 w-7" />} label="Total Events" value={stats.totalEvents.toLocaleString()} gradient="bg-gradient-to-r from-purple-500 to-indigo-400" />
-        <StatCard icon={<Clock className="h-7 w-7" />} label="Avg Time on Forms" value={stats.avgTimeOnForms + 's'} gradient="bg-gradient-to-r from-green-500 to-teal-400" />
-      </div>
-
-      {/* Projects Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Your Projects</h2>
-          <Link
-            href="/dashboard/projects/new"
-            className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow transition"
-          >
-            <Plus className="h-5 w-5 mr-2" /> New Project
-          </Link>
-        </div>
-        
-        {memoizedProjects.length === 0 ? (
-          <div className="text-center py-16">
-            <BarChart3 className="mx-auto h-14 w-14 text-blue-200" />
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">No projects yet</h3>
-            <p className="mt-2 text-gray-500">Get started by creating your first project.</p>
-            <div className="mt-6">
-              <Link
-                href="/dashboard/projects/new"
-                className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-5 w-5 mr-2" /> New Project
-              </Link>
+              </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Upgrade Banner */}
+      {showUpgrade && !isPro && !planLoading && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl p-6 flex items-center justify-between shadow-xl">
+            <div className="flex items-center gap-4">
+              <Zap className="h-10 w-10 text-white" />
+              <div>
+                <p className="font-bold text-lg">Unlock 30/90 Day Analytics</p>
+                <p className="text-white/90">Upgrade to Pro for deeper insights</p>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="bg-white text-orange-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition"
+            >
+              Upgrade Now
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {isPro && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 flex items-center gap-4 shadow-xl">
+            <CheckCircle className="h-10 w-10 text-white" />
+            <div>
+              <p className="font-bold text-lg">Pro User — Full Access</p>
+              <p className="text-white/90">Real-time analytics, exports, and priority support</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Date Range */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-black">Analytics Overview</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <label className="text-sm font-medium text-gray-200 whitespace-nowrap">
+              Range:
+            </label>
+
+            <div className="relative w-full sm:w-auto">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value as any)}
+                className="
+                  appearance-none
+                  w-full
+                  bg-gradient-to-r from-blue-900/40 to-blue-800/20
+                  border border-blue-400/30
+                  text-gray-100 font-medium text-sm
+                  rounded-lg
+                  px-4 py-2 pr-10
+                  shadow-inner
+                  backdrop-blur-sm
+                  focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent
+                  hover:border-blue-400/50
+                  transition-all duration-200
+                  cursor-pointer
+                  disabled:cursor-not-allowed disabled:opacity-50
+                "
+              >
+                <option
+                  value="7d"
+                  className="bg-blue-300 text-gray-500 hover:bg-blue-700"
+                >
+                  Last 7 days
+                </option>
+
+                <option
+                  value="30d"
+                  disabled={!isPro}
+                  className={`${
+                    isPro
+                      ? 'bg-blue-300 text-gray-500 hover:bg-blue-700'
+                      : 'bg-blue-950 text-gray-500'
+                  }`}
+                >
+                  Last 30 days {isPro ? '' : '(Pro)'}
+                </option>
+
+                <option
+                  value="90d"
+                  disabled={!isPro}
+                  className={`${
+                    isPro
+                      ? 'bg-blue-300 text-gray-500 hover:bg-blue-700'
+                      : 'bg-blue-950 text-gray-500'
+                  }`}
+                >
+                  Last 90 days {isPro ? '' : '(Pro)'}
+                </option>
+              </select>
+
+              {/* Custom dropdown arrow */}
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </div>          
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <StatCard
+          icon={<BarChart3 className="h-7 w-7" />}
+          label="Total Projects"
+          value={stats.totalProjects}
+          gradient="from-violet-600 to-indigo-600"
+        />
+        <StatCard
+          icon={<Users className="h-7 w-7" />}
+          label="Form Interactions"
+          value="Live Soon"
+          gradient="from-purple-600 to-pink-600"
+        />
+        <StatCard
+          icon={<Clock className="h-7 w-7" />}
+          label="Avg Time on Form"
+          value={stats.avgTimeOnForms}
+          gradient="from-emerald-500 to-teal-600"
+        />
+      </div>
+
+      {/* Plan & Usage */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+          <h3 className="text-xl font-bold mb-4">Plan Status</h3>
+          <UserPlanBadge />
+        </div>
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+          <h3 className="text-xl font-bold mb-4">Usage This Month</h3>
+          <PlanUsage />
+        </div>
+      </div>
+
+      {/* Projects */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-black">Your Projects</h2>
+          <Link
+            href="/dashboard/projects/new"
+            className="inline-flex items-center gap-2 bg-white text-violet-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl"
+          >
+            <Plus className="h-5 w-5" />
+            New Project
+          </Link>
+        </div>
+
+        {memoizedProjects.length === 0 ? (
+          <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10">
+            <div className="w-20 h-20 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <BarChart3 className="h-10 w-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-black mb-3">No projects yet</h3>
+            <p className="text-gray-300 mb-8 max-w-md mx-auto">
+              Create your first project to start tracking form interactions.
+            </p>
+            <Link
+              href="/dashboard/projects/new"
+              className="inline-flex items-center gap-2 bg-white text-violet-600 px-8 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl"
+            >
+              <Plus className="h-6 w-6" />
+              Create First Project
+            </Link>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {memoizedProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} onShowTrackingCode={handleShowTrackingCode} />
             ))}
           </div>
         )}
       </div>
+
+      {/* Tracking Modal */}
+      {selectedProject && (
+        <TrackingCodeModal
+          projectId={selectedProject.id}
+          projectName={selectedProject.name}
+          isOpen={showTrackingModal}
+          onClose={() => setShowTrackingModal(false)}
+        />
+      )}
     </div>
   )
-} 
+}

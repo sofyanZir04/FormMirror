@@ -1,0 +1,96 @@
+[
+    {
+      "slug": "hidden-cost-form-abandonment",
+      "title": "You’re Bleeding $50,917/Month on Form Abandonment",
+      "description": "The average business loses 67.89% of form completions. Calculate your real loss and stop bleeding revenue.",
+      "date": "2024-01-15",
+      "readTime": "8 min",
+      "tags": ["form abandonment", "revenue loss", "conversion rate"],
+      "author": {
+        "name": "FormMirror Team",
+        "role": "10,000+ Forms Analyzed"
+      },
+      "heroStat": {
+        "title": "Your Real Loss",
+        "amount": "$50,917.50",
+        "subtitle": "What a $100K/month business loses at 67.89% abandonment"
+      },
+      "calculator": [
+        { "label": "Monthly Visitors", "value": "10,000" },
+        { "label": "Form Conversion Rate", "value": "5%" },
+        { "label": "Average Order Value", "value": "$150" },
+        { "label": "Abandonment Rate", "value": "67.89%", "highlight": true }
+      ],
+      "reasons": [
+        { "title": "Too Long", "desc": "+1 field = -5–10% completion" },
+        { "title": "Bad Mobile UX", "desc": "60%+ traffic is mobile" },
+        { "title": "No Trust", "desc": "No privacy policy = instant bounce" },
+        { "title": "Tech Errors", "desc": "1s delay = -7% conversion" }
+      ],
+      "hiddenCosts": [
+        "Wasted CAC — you paid for traffic that never converts",
+        "Damaged brand trust — users remember bad experiences",
+        "Support overload — frustrated users call in",
+        "Dev time lost — fixing forms instead of building features"
+      ],
+      "fixes": [
+        { "icon": "TrendingUp", "title": "Track Drop-Offs", "desc": "See exactly where users quit" },
+        { "icon": "Zap", "title": "Simplify Forms", "desc": "Remove fields, go multi-step" },
+        { "icon": "Shield", "title": "Build Trust", "desc": "GDPR badges, clear privacy" }
+      ],
+      "cta": {
+        "title": "Stop Losing $50K/Month",
+        "subtitle": "Start tracking your forms today. See drop-offs in real-time. Fix what’s broken.",
+        "button": "Start Free Trial"
+      },
+      "related": [
+        {
+          "title": "How to Increase Form Conversions by 40%",
+          "desc": "Real tactics used by 10,000+ forms",
+          "slug": "increase-form-conversion-40-percent"
+        },
+        {
+          "title": "Privacy-First Analytics = Higher Trust",
+          "desc": "Why no cookies = more conversions",
+          "slug": "privacy-first-analytics"
+        }
+      ]
+    },
+    {
+      "slug": "increase-form-conversion-40-percent",
+      "title": "How to Increase Form Conversion by 40% in 30 Days",
+      "description": "Step-by-step playbook used by 10,000+ forms to boost completion rates.",
+      "date": "2024-01-22",
+      "readTime": "6 min",
+      "tags": ["conversion", "optimization", "UX"],
+      "author": {
+        "name": "FormMirror Team",
+        "role": "10,000+ Forms Analyzed"
+      },
+      "heroStat": {
+        "title": "Average Gain",
+        "amount": "+40.2%",
+        "subtitle": "Average conversion lift after 30 days"
+      },
+      "calculator": [
+        { "label": "Before Optimization", "value": "32%" },
+        { "label": "After Optimization", "value": "72.2%" },
+        { "label": "Extra Conversions", "value": "+1,251", "highlight": true }
+      ],
+      "reasons": [],
+      "hiddenCosts": [],
+      "fixes": [],
+      "cta": {
+        "title": "Get Your 40% Lift",
+        "subtitle": "Start optimizing today — no code required.",
+        "button": "Try FormMirror Free"
+      },
+      "related": [
+        {
+          "title": "You’re Bleeding $50,917/Month",
+          "desc": "Calculate your form abandonment cost",
+          "slug": "hidden-cost-form-abandonment"
+        }
+      ]
+    }
+  ]
