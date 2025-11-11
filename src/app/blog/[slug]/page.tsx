@@ -19,11 +19,12 @@ import {
 
 import blogPosts from '../../../app/content/blog-posts.json'
 
-// === generateMetadata – params is NOT a Promise here ===
-type MetadataProps = { params: { slug: string } }
+// generateMetadata: params is a Promise in Next.js 15
+type MetadataProps = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
-  const post = blogPosts.find((p) => p.slug === params.slug)
+  const { slug } = await params // MUST await
+  const post = blogPosts.find((p) => p.slug === slug)
   if (!post) return { title: 'Post Not Found' }
 
   return {
@@ -39,20 +40,17 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   }
 }
 
-// === generateStaticParams ===
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }))
 }
 
-// === PAGE COMPONENT – MUST be async, so params is Promise<{ slug: string }> ===
+// Page component: params is also a Promise
 type PageProps = { params: Promise<{ slug: string }> }
 
 const IconMap = { TrendingUp, Shield, Zap } as const
 
 export default async function BlogPost({ params }: PageProps) {
-  // MUST await params when page is async
-  const { slug } = await params
-
+  const { slug } = await params // MUST await
   const post = blogPosts.find((p) => p.slug === slug)
   if (!post) notFound()
 
@@ -112,7 +110,7 @@ export default async function BlogPost({ params }: PageProps) {
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
-                  <img src="/logo.svg" alt="FormMirror Logo" className="w-full h-full" />
+                  <img src="/logo.svg" alt="FormMirror Logo" className="w-full h-full object-cover" />
                 </div>
               </Link>
               <div>

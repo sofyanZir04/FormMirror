@@ -157,7 +157,7 @@ export function CheckoutButton() {
           href={`https://checkout.lemonsqueezy.com/buy/${variantId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-center text-xs text-gray-500 hover:text-gray-700 underline"
+          className="block text-center text-xs text-gray-300 hover:text-gray-700 underline"
         >
           Or click here to checkout directly
         </a>
@@ -166,96 +166,6 @@ export function CheckoutButton() {
   );
 }
 
-// ============================================
-// IMPORTANT: Add this to your page's <head>
-// ============================================
-// <Script
-//   src="https://app.lemonsqueezy.com/js/lemon.js"
-//   strategy="afterInteractive"
-//   onLoad={() => console.log('LemonSqueezy SDK loaded')}
-//   onError={() => console.warn('LemonSqueezy SDK failed to load - fallback will be used')}
-// />
-
-// export function CheckoutButton() {
-//   const [isSDKReady, setIsSDKReady] = useState(false);
-//   const [loadError, setLoadError] = useState(false);
-
-//   useEffect(() => {
-//     const init = () => {
-//       if (typeof (window as any).createLemonSqueezy === 'function') {
-//         try {
-//           (window as any).createLemonSqueezy();
-//           setIsSDKReady(true);
-//           return true;
-//         } catch (err) {
-//           setLoadError(true);
-//         }
-//       }
-//       return false;
-//     };
-
-//     if (init()) return;
-
-//     const interval = setInterval(() => {
-//       if (init() || loadError) clearInterval(interval);
-//     }, 100);
-
-//     const timeout = setTimeout(() => {
-//       clearInterval(interval);
-//       if (!isSDKReady) setLoadError(true);
-//     }, 10000);
-
-//     return () => {
-//       clearInterval(interval);
-//       clearTimeout(timeout);
-//     };
-//   }, []);
-
-//   const handleCheckout = () => {
-//     const variantId = process.env.NEXT_PUBLIC_LEMONSQUEZY_PRO_VARIANT_ID;
-//     if (!variantId || loadError || !isSDKReady) {
-//       alert('Checkout unavailable. Try disabling ad blockers.');
-//       return;
-//     }
-
-//     try {
-//       const ls = (window as any).LemonSqueezy;
-//       ls.Url.Open(`https://checkout.lemonsqueezy.com/buy/${variantId}?embed=1&media=0`);
-//       ls.Setup({
-//         eventHandler: (e: any) => {
-//           if (e.eventName === 'Checkout.Success') {
-//             console.log('Success!');
-//           }
-//           else{
-//             console.log("Faild !")
-//           }
-//         },
-//       });
-//     } catch (err) {
-//       alert('Failed to open checkout. Please disable privacy extensions.');
-//     }
-//   };
-
-//   return (
-//     <button
-//       onClick={handleCheckout}
-//       disabled={!isSDKReady || loadError}
-//       className={`w-full py-3 rounded-xl font-bold transition ${
-//         loadError
-//           ? 'bg-red-100 text-red-700'
-//           : isSDKReady
-//           ? 'bg-white text-violet-600 hover:bg-gray-100'
-//           : 'bg-gray-300 text-gray-500'
-//       }`}
-//     >
-//       {loadError
-//         ? 'Checkout Blocked'
-//         : isSDKReady
-//         ? 'Start Converting More Users'
-//         : 'Loading...'}
-//     </button>
-//   );
-// }
 
 
 export default function HomePage() {
@@ -327,12 +237,86 @@ export default function HomePage() {
       {/* Fixed Top Navbar */}
       <nav className="fixed top-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-5xl px-4">
         <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-xl px-8 py-4 flex items-center justify-between border border-white/20">
-          {/* <Link href="/" className="flex items-center group">
-            <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-white font-black text-lg">F</span>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+              <img src="/logo.svg" alt="FormMirror Logo" className="w-full h-full" />
             </div>
-            <span className="ml-3 text-xl font-bold text-gray-900">FormMirror</span>
-          </Link> */}
+            <span className="text-xl font-bold text-black">FormMirror</span>
+          </Link>
+
+          {/* Desktop Links */}
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium text-gray-700 hover:text-violet-600 transition"
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            {/* Blog link – highlighted when active */}
+            <Link
+              href="/blog"
+              className="flex items-center group transition text-violet-600 font-bold">
+              <span className="ml-3 bg-gradient-to-r from-gray-600 to-gray-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transform hover:scale-105 transition-all">blog</span>
+            </Link>
+
+            <Link
+              href="/auth/register"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transform hover:scale-105 transition-all"
+            >
+              Start Free
+            </Link>
+          </div>
+
+          {/* Mobile toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-full hover:bg-gray-100"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="mt-3 bg-white rounded-2xl shadow-xl p-4 border border-gray-100">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block py-2 text-gray-700 hover:text-violet-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            <Link
+              href="/blog"
+              className="block py-2 font-bold text-violet-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              blog
+            </Link>
+
+            <Link
+              href="/auth/register"
+              className="block mt-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white py-2.5 rounded-full text-center font-bold"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Start Free
+            </Link>
+          </div>
+        )}
+      </nav>
+      {/* Fixed Top Navbar
+      <nav className="fixed top-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-5xl px-4">
+        <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-xl px-8 py-4 flex items-center justify-between border border-white/20">          
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
               <img 
@@ -354,6 +338,9 @@ export default function HomePage() {
                 {item.label}
               </Link>
             ))}
+            <Link href="/blog" className="flex items-center group">              
+              <span className="ml-3 text-xl font-bold text-gray-900">FormMirror</span>
+            </Link> 
             <Link
               href="/auth/register"
               className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transform hover:scale-105 transition-all"
@@ -391,7 +378,7 @@ export default function HomePage() {
             </Link>
           </div>
         )}
-      </nav>
+      </nav> */}
 
       {/* Hero */}
       <section className="pt-32 pb-32 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 text-white relative overflow-hidden">
