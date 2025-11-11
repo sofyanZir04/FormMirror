@@ -1,3 +1,4 @@
+// src/app/api/projects/[id]/insights/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
@@ -19,10 +20,12 @@ type Insight = {
 }
 
 export async function GET(req: NextRequest) {
-  // Extract projectId from URL
-  const projectId = req.nextUrl.pathname.split('/')[4] // '/api/projects/[id]/insights'
-
   const headers = { 'Cache-Control': 'no-store' }
+
+  // Extract projectId from the URL
+  // Example URL: /api/projects/<id>/insights
+  const segments = req.nextUrl.pathname.split('/')
+  const projectId = segments[3] // segments[0]='', [1]='api', [2]='projects', [3]=id
 
   if (!projectId) {
     return NextResponse.json({ error: 'Missing project id' }, { status: 400, headers })
@@ -57,8 +60,8 @@ export async function GET(req: NextRequest) {
 
     for (const ev of events || []) {
       const key = ev.field_name || 'unknown'
-      if (!perField[key])
-        perField[key] = { visits: 0, abandons: 0, totalDuration: 0, focusCount: 0, inputCount: 0, blurCount: 0 }
+      if (!perField[key]) perField[key] = { visits: 0, abandons: 0, totalDuration: 0, focusCount: 0, inputCount: 0, blurCount: 0 }
+
       if (ev.event_type === 'focus') perField[key].visits++
       if (ev.event_type === 'abandon') perField[key].abandons++
       if (ev.event_type === 'focus') perField[key].focusCount++
@@ -67,7 +70,7 @@ export async function GET(req: NextRequest) {
       if (typeof ev.duration === 'number') perField[key].totalDuration += ev.duration
     }
 
-    // Killer field
+    // Killer field (highest abandonment rate with minimum traffic)
     let killer: Insight['killerField'] = null
     const MIN_VISITS = 5
     for (const [fieldName, m] of Object.entries(perField)) {
@@ -88,28 +91,27 @@ export async function GET(req: NextRequest) {
     const submits = (events || []).filter(e => e.event_type === 'submit').length
     const abandons = (events || []).filter(e => e.event_type === 'abandon').length
 
-    // Line 69 fix
     if (killer) {
       tips.push(
-        `Make the field "${killer.fieldName || 'Unknown field'}" optional or split it into smaller parts to reduce drop-off (abandonment ${Math.round(
-          killer.abandonmentRate * 100
-        )}%).`
+        `Make the field “${killer.fieldName || 'Unknown field'}” optional or split it into smaller parts to reduce drop-off (abandonment ${Math.round(
+          killer.abandonmentRate * 100,
+        )}%).`,
       )
     }
 
-    // Line 76 fix: Long duration fields
+    // Long-duration fields
     for (const [fieldName, m] of Object.entries(perField)) {
       if (m.focusCount === 0) continue
       const avg = m.totalDuration / Math.max(1, m.focusCount)
       if (avg > 10000) {
-        tips.push(`Add help text or simplify "${fieldName}" — users spend ~${Math.round(avg / 1000)}s on average here.`)
+        tips.push(`Add help text or simplify “${fieldName}” — users spend ~${Math.round(avg / 1000)}s on average here.`)
       }
     }
 
-    // Line 82 fix: Skipped fields
+    // Frequently skipped fields
     for (const [fieldName, m] of Object.entries(perField)) {
       if (m.focusCount >= MIN_VISITS && m.inputCount === 0 && m.blurCount > 0) {
-        tips.push(`Consider removing or reordering "${fieldName}" — many users skip it after looking.`)
+        tips.push(`Consider removing or reordering “${fieldName}” — many users skip it after looking.`)
       }
     }
 
@@ -133,7 +135,6 @@ export async function GET(req: NextRequest) {
       },
     }
 
-    // Line 106-107 fix
     return NextResponse.json(payload, { headers })
   } catch (err: unknown) {
     console.error('Insights error:', err)
