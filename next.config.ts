@@ -1,11 +1,13 @@
+// next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Temporarily disable ESLint during build
+  // ✅ تعطيل ESLint أثناء البناء على Vercel
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Add headers for favicon caching
+
+  // ✅ إعدادات CSP والـ favicon معًا
   async headers() {
     return [
       {
@@ -17,9 +19,26 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.lemonsqueezy.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "frame-src https://checkout.lemonsqueezy.com",
+              "connect-src 'self' https://app.lemonsqueezy.com https://checkout.lemonsqueezy.com"
+            ].join('; ')
+          }
+        ]
+      }
     ]
   },
-  // Disable automatic favicon generation
+
+  // ✅ تعطيل fallback لمكتبة fs في المتصفح
   webpack: (config, { dev, isServer }) => {
     if (!isServer && !dev) {
       config.resolve.fallback = {
