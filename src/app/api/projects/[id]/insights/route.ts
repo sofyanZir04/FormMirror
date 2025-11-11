@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
+type Insight = {
+  killerField: {
+    fieldName: string | null
+    visits: number
+    abandons: number
+    abandonmentRate: number
+  } | null
+  tips: string[]
+  stats: {
+    totalEvents: number
+    uniqueSessions: number
+    submits: number
+    abandons: number
+    windowDays: number
+  }
+}
+
 export async function GET(req: NextRequest) {
+  // Extract projectId from URL
   const url = new URL(req.url)
-  // extract the dynamic route param from pathname
-  // e.g., /api/projects/123/insights
-  const pathSegments = url.pathname.split('/')
-  const projectId = pathSegments[3] // [ '', 'api', 'projects', '123', 'insights' ]
+  const segments = url.pathname.split('/') // ['', 'api', 'projects', '[id]', 'insights']
+  const projectId = segments[3]
 
   const headers = { 'Cache-Control': 'no-store' }
 
@@ -17,6 +33,7 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerSupabaseClient()
 
+    // Date window: last 7 days
     const since = new Date()
     since.setDate(since.getDate() - 7)
 
@@ -34,7 +51,9 @@ export async function GET(req: NextRequest) {
     const uniqueSessions = new Set((events || []).map(e => e.session_id)).size
     const totalEvents = events?.length || 0
 
+    // Aggregate per field
     const perField: Record<string, { visits: number; abandons: number; totalDuration: number; focusCount: number; inputCount: number; blurCount: number }> = {}
+
     for (const ev of events || []) {
       const key = ev.field_name || 'unknown'
       if (!perField[key]) perField[key] = { visits: 0, abandons: 0, totalDuration: 0, focusCount: 0, inputCount: 0, blurCount: 0 }
@@ -46,6 +65,7 @@ export async function GET(req: NextRequest) {
       if (typeof ev.duration === 'number') perField[key].totalDuration += ev.duration
     }
 
+    // Determine killer field (highest abandonment rate, with minimum traffic)
     let killer: Insight['killerField'] = null
     const MIN_VISITS = 5
     for (const [fieldName, m] of Object.entries(perField)) {
@@ -61,25 +81,30 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Generate actionable tips
     const tips: string[] = []
     const submits = (events || []).filter(e => e.event_type === 'submit').length
     const abandons = (events || []).filter(e => e.event_type === 'abandon').length
 
     if (killer) {
-      tips.push(`Make the field “${killer.fieldName || 'Unknown field'}” optional or split it into smaller parts to reduce drop-off (abandonment ${Math.round(killer.abandonmentRate * 100)}%).`)
+      tips.push(
+        `Make the field "${killer.fieldName || 'Unknown field'}" optional or split it into smaller parts to reduce drop-off (abandonment ${Math.round(killer.abandonmentRate * 100)}%).`
+      )
     }
 
+    // Long-duration fields (avg focus duration > 10s)
     for (const [fieldName, m] of Object.entries(perField)) {
       if (m.focusCount === 0) continue
       const avg = m.totalDuration / Math.max(1, m.focusCount)
       if (avg > 10000) {
-        tips.push(`Add help text or simplify “${fieldName}” — users spend ~${Math.round(avg / 1000)}s on average here.`)
+        tips.push(`Add help text or simplify "${fieldName}" — users spend ~${Math.round(avg / 1000)}s on average here.`)
       }
     }
 
+    // Frequently skipped fields: focus with no input and blur
     for (const [fieldName, m] of Object.entries(perField)) {
       if (m.focusCount >= MIN_VISITS && m.inputCount === 0 && m.blurCount > 0) {
-        tips.push(`Consider removing or reordering “${fieldName}” — many users skip it after looking.`)
+        tips.push(`Consider removing or reordering "${fieldName}" — many users skip it after looking.`)
       }
     }
 
@@ -103,12 +128,9 @@ export async function GET(req: NextRequest) {
       },
     }
 
-    return NextResponse.json({ uniqueSessions, totalEvents }, { headers })
-  } catch (err: unknown) {
+    return NextResponse.json(payload, { headers })
+  } catch (err) {
     console.error('Insights error:', err)
     return NextResponse.json({ error: 'Failed to compute insights' }, { status: 500, headers })
   }
 }
-
-
-
