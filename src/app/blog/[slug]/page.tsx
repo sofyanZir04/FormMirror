@@ -19,11 +19,11 @@ import {
 
 import blogPosts from '../../../app/content/blog-posts.json'
 
-// generateMetadata: params is a Promise in Next.js 15
+// generateMetadata: params is Promise
 type MetadataProps = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
-  const { slug } = await params // MUST await
+  const { slug } = await params
   const post = blogPosts.find((p) => p.slug === slug)
   if (!post) return { title: 'Post Not Found' }
 
@@ -44,13 +44,13 @@ export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }))
 }
 
-// Page component: params is also a Promise
+// Page: params is also Promise
 type PageProps = { params: Promise<{ slug: string }> }
 
 const IconMap = { TrendingUp, Shield, Zap } as const
 
 export default async function BlogPost({ params }: PageProps) {
-  const { slug } = await params // MUST await
+  const { slug } = await params
   const post = blogPosts.find((p) => p.slug === slug)
   if (!post) notFound()
 
