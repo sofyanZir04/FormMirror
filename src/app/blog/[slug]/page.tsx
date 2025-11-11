@@ -19,9 +19,7 @@ import {
 
 import blogPosts from '../../../app/content/blog-posts.json'
 
-// ---------------------------------------------------------------------
-// 1. generateMetadata – receives **resolved** params (plain object)
-// ---------------------------------------------------------------------
+// === generateMetadata – params is NOT a Promise here ===
 type MetadataProps = { params: { slug: string } }
 
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
@@ -41,22 +39,18 @@ export async function generateMetadata({ params }: MetadataProps): Promise<Metad
   }
 }
 
-// ---------------------------------------------------------------------
-// 2. generateStaticParams – static generation of all slugs
-// ---------------------------------------------------------------------
+// === generateStaticParams ===
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }))
 }
 
-// ---------------------------------------------------------------------
-// 3. Page component – **async**, so params is a Promise
-// ---------------------------------------------------------------------
+// === PAGE COMPONENT – MUST be async, so params is Promise<{ slug: string }> ===
 type PageProps = { params: Promise<{ slug: string }> }
 
 const IconMap = { TrendingUp, Shield, Zap } as const
 
 export default async function BlogPost({ params }: PageProps) {
-  // Await the params (required when page is async)
+  // MUST await params when page is async
   const { slug } = await params
 
   const post = blogPosts.find((p) => p.slug === slug)
@@ -100,7 +94,7 @@ export default async function BlogPost({ params }: PageProps) {
                 </span>
               ) : (
                 <span key={i}>{word} </span>
-              ),
+              )
             )}
           </h1>
 
@@ -132,7 +126,6 @@ export default async function BlogPost({ params }: PageProps) {
           </div>
         </header>
 
-        {/* Hero Stat */}
         {post.heroStat && (
           <div className="bg-gradient-to-r from-red-600/20 to-pink-600/20 border border-red-500/50 rounded-3xl p-8 mb-12 backdrop-blur-sm">
             <div className="flex items-start gap-4">
@@ -146,7 +139,6 @@ export default async function BlogPost({ params }: PageProps) {
           </div>
         )}
 
-        {/* Calculator */}
         {post.calculator && post.calculator.length > 0 && (
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 mb-12 border border-white/20">
             <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
@@ -166,16 +158,12 @@ export default async function BlogPost({ params }: PageProps) {
           </div>
         )}
 
-        {/* Reasons */}
         {post.reasons && post.reasons.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">Why Users Abandon</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {post.reasons.map((r, i) => (
-                <div
-                  key={i}
-                  className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
-                >
+                <div key={i} className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="font-bold text-xl mb-2">{r.title}</h3>
                   <p className="text-gray-300">{r.desc}</p>
                 </div>
@@ -184,7 +172,6 @@ export default async function BlogPost({ params }: PageProps) {
           </section>
         )}
 
-        {/* Hidden Costs */}
         {post.hiddenCosts && post.hiddenCosts.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">Hidden Costs</h2>
@@ -199,7 +186,6 @@ export default async function BlogPost({ params }: PageProps) {
           </section>
         )}
 
-        {/* Fixes */}
         {post.fixes && post.fixes.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">How to Fix It</h2>
@@ -222,7 +208,6 @@ export default async function BlogPost({ params }: PageProps) {
           </section>
         )}
 
-        {/* CTA */}
         <div className="mt-16 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-10 text-center">
           <h3 className="text-3xl font-black mb-4">{post.cta.title}</h3>
           <p className="text-xl text-violet-100 mb-8 max-w-2xl mx-auto">{post.cta.subtitle}</p>
@@ -235,7 +220,6 @@ export default async function BlogPost({ params }: PageProps) {
           </Link>
         </div>
 
-        {/* Related Posts */}
         {post.related && post.related.length > 0 && (
           <section className="mt-16">
             <h2 className="text-3xl font-black mb-8">Keep Reading</h2>
