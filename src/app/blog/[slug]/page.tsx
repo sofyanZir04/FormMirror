@@ -1,13 +1,31 @@
+// src/app/blog/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
-import { Calendar, Clock, ArrowLeft, Share2, TrendingUp, DollarSign, AlertTriangle, CheckCircle, Shield, Zap, Tag, ArrowRight } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  ArrowLeft,
+  Share2,
+  TrendingUp,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  Shield,
+  Zap,
+  Tag,
+  ArrowRight,
+} from 'lucide-react'
+
 import blogPosts from '../../../app/content/blog-posts.json'
 
-type Props = { params: { slug: string } }
+// ---------------------------------------------------------------------
+// 1. generateMetadata – receives **resolved** params (plain object)
+// ---------------------------------------------------------------------
+type MetadataProps = { params: { slug: string } }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = blogPosts.find(p => p.slug === params.slug)
+export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+  const post = blogPosts.find((p) => p.slug === params.slug)
   if (!post) return { title: 'Post Not Found' }
 
   return {
@@ -23,14 +41,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// ---------------------------------------------------------------------
+// 2. generateStaticParams – static generation of all slugs
+// ---------------------------------------------------------------------
 export async function generateStaticParams() {
-  return blogPosts.map(post => ({ slug: post.slug }))
+  return blogPosts.map((post) => ({ slug: post.slug }))
 }
 
-const IconMap = { TrendingUp, Shield, Zap }
+// ---------------------------------------------------------------------
+// 3. Page component – **async**, so params is a Promise
+// ---------------------------------------------------------------------
+type PageProps = { params: Promise<{ slug: string }> }
 
-export default function BlogPost({ params }: Props) {
-  const post = blogPosts.find(p => p.slug === params.slug)
+const IconMap = { TrendingUp, Shield, Zap } as const
+
+export default async function BlogPost({ params }: PageProps) {
+  // Await the params (required when page is async)
+  const { slug } = await params
+
+  const post = blogPosts.find((p) => p.slug === slug)
   if (!post) notFound()
 
   return (
@@ -46,27 +75,39 @@ export default function BlogPost({ params }: Props) {
       <article className="max-w-7xl mx-auto px-4 py-12">
         <header className="mb-16">
           <div className="flex items-center gap-6 text-sm text-gray-300 mb-6">
-            <div className="flex items-center"><Calendar className="h-4 w-4 mr-1" />{post.date}</div>
-            <div className="flex items-center"><Clock className="h-4 w-4 mr-1" />{post.readTime}</div>
-            <div className="flex items-center"><Tag className="h-4 w-4 mr-1" />Analytics</div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-1" />
+              {post.date}
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              {post.readTime}
+            </div>
+            <div className="flex items-center">
+              <Tag className="h-4 w-4 mr-1" />
+              Analytics
+            </div>
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-black mb-6 leading-tight">
-            {post.title.split(' ').map((word, i) => 
+            {post.title.split(' ').map((word, i) =>
               word.includes('$') || word.includes('%') ? (
-                <span key={i} className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400">
+                <span
+                  key={i}
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400"
+                >
                   {word}{' '}
                 </span>
               ) : (
                 <span key={i}>{word} </span>
-              )
+              ),
             )}
           </h1>
 
           <p className="text-xl text-gray-300 mb-8 max-w-4xl">{post.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-8">
-            {post.tags.map(tag => (
+            {post.tags.map((tag) => (
               <span key={tag} className="bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full text-sm">
                 {tag}
               </span>
@@ -75,16 +116,9 @@ export default function BlogPost({ params }: Props) {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-black text-xl">FM</span>
-              </div> */}
               <Link href="/" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
-                  <img 
-                    src="/logo.svg" 
-                    alt="FormMirror Logo" 
-                    className="w-full h-full"
-                  />
+                  <img src="/logo.svg" alt="FormMirror Logo" className="w-full h-full" />
                 </div>
               </Link>
               <div>
@@ -92,10 +126,13 @@ export default function BlogPost({ params }: Props) {
                 <div className="text-sm text-gray-400">{post.author.role}</div>
               </div>
             </div>
-            <button className="text-white hover:text-violet-300"><Share2 className="h-5 w-5" /></button>
+            <button className="text-white hover:text-violet-300">
+              <Share2 className="h-5 w-5" />
+            </button>
           </div>
         </header>
 
+        {/* Hero Stat */}
         {post.heroStat && (
           <div className="bg-gradient-to-r from-red-600/20 to-pink-600/20 border border-red-500/50 rounded-3xl p-8 mb-12 backdrop-blur-sm">
             <div className="flex items-start gap-4">
@@ -109,6 +146,7 @@ export default function BlogPost({ params }: Props) {
           </div>
         )}
 
+        {/* Calculator */}
         {post.calculator && post.calculator.length > 0 && (
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 mb-12 border border-white/20">
             <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
@@ -128,12 +166,16 @@ export default function BlogPost({ params }: Props) {
           </div>
         )}
 
+        {/* Reasons */}
         {post.reasons && post.reasons.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">Why Users Abandon</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {post.reasons.map((r, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <div
+                  key={i}
+                  className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
+                >
                   <h3 className="font-bold text-xl mb-2">{r.title}</h3>
                   <p className="text-gray-300">{r.desc}</p>
                 </div>
@@ -142,6 +184,7 @@ export default function BlogPost({ params }: Props) {
           </section>
         )}
 
+        {/* Hidden Costs */}
         {post.hiddenCosts && post.hiddenCosts.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">Hidden Costs</h2>
@@ -156,6 +199,7 @@ export default function BlogPost({ params }: Props) {
           </section>
         )}
 
+        {/* Fixes */}
         {post.fixes && post.fixes.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-black mb-6">How to Fix It</h2>
@@ -178,6 +222,7 @@ export default function BlogPost({ params }: Props) {
           </section>
         )}
 
+        {/* CTA */}
         <div className="mt-16 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-10 text-center">
           <h3 className="text-3xl font-black mb-4">{post.cta.title}</h3>
           <p className="text-xl text-violet-100 mb-8 max-w-2xl mx-auto">{post.cta.subtitle}</p>
@@ -190,6 +235,7 @@ export default function BlogPost({ params }: Props) {
           </Link>
         </div>
 
+        {/* Related Posts */}
         {post.related && post.related.length > 0 && (
           <section className="mt-16">
             <h2 className="text-3xl font-black mb-8">Keep Reading</h2>
