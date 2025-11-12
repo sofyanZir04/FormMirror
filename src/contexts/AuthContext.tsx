@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase/browser'
 import { encryptData } from '@/lib/encryption'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { AppUser } from '@/types/auth'
 
 interface User {
   id: string
@@ -21,6 +22,9 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
+
+const { data } = await supabase.auth.getUser()
+const user = data.user as AppUser | null
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
