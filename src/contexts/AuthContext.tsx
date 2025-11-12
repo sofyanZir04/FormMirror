@@ -8,21 +8,36 @@ import { supabase } from '@/lib/supabase/browser'
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { AppUser } from '@/types/auth'
 
+// interface User {
+//   id: string
+//   email: string
+//   plan: 'free' | 'pro'
+//   lastLogin?: string
+// }
 interface User {
   id: string
   email: string
   plan: 'free' | 'pro'
   lastLogin?: string
+  full_name?: string  // ← Add this
 }
 
 interface AuthContextType {
-  user: AppUser | null
+  user: User | null  // ← Change from AppUser to your custom User
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   updateUser: (data: { full_name?: string }) => Promise<void>
 }
+// interface AuthContextType {
+//   user: AppUser | null
+//   loading: boolean
+//   signIn: (email: string, password: string) => Promise<void>
+//   signInWithGoogle: () => Promise<void>
+//   signOut: () => Promise<void>
+//   updateUser: (data: { full_name?: string }) => Promise<void>
+// }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -103,6 +118,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [transformUser])
 
+  // const updateUser = useCallback(async (data: { full_name?: string }) => {
+  //   try {
+  //     const { error } = await supabase.auth.updateUser({
+  //       data: {
+  //         full_name: data.full_name
+  //       }
+  //     });
+
+  //     if (error) throw error;
+
+  //     // Update local user state
+  //     if (user) {
+  //       setUser({
+  //         ...user,
+  //         ...(data.full_name && { full_name: data.full_name })
+  //       });
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Update user error:', error);
+  //     toast.error(error.message || 'Failed to update user');
+  //     throw error;
+  //   }
+  // }, [user]);
+
   const updateUser = useCallback(async (data: { full_name?: string }) => {
     try {
       const { error } = await supabase.auth.updateUser({
@@ -110,14 +149,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           full_name: data.full_name
         }
       });
-
+  
       if (error) throw error;
-
-      // Update local user state
+  
+      // Update local state
       if (user) {
         setUser({
           ...user,
-          ...(data.full_name && { full_name: data.full_name })
+          full_name: data.full_name  // ← Simplified
         });
       }
     } catch (error: any) {
