@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase/browser'
 import { Toaster, toast } from 'react-hot-toast'
 import Link from 'next/link'
 import { MessageSquare, Send, CheckCircle, User, Mail, Sparkles, ArrowLeft, X } from 'lucide-react'
-import { AppUser } from '@/types/auth'
 
 export default function FeedbackPage() {
   const { user } = useAuth()
@@ -19,12 +18,11 @@ export default function FeedbackPage() {
     type: 'feedback' as 'feedback' | 'bug' | 'feature'
   })
 
-  // FIXED: Safe, type-safe access to user_metadata
+  // FIXED: user is AppUser → no casting!
   useEffect(() => {
     if (!user) return
 
-    const appUser = user as AppUser | null
-    const fullName = appUser?.user_metadata?.full_name
+    const fullName = user.user_metadata?.full_name
     const emailName = user.email?.split('@')[0] || ''
 
     setForm(prev => ({
@@ -81,7 +79,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 text-white py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 text-white py-12"> 
       <Toaster position="top-right" toastOptions={{ style: { background: '#1a1a1a', color: '#fff' } }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

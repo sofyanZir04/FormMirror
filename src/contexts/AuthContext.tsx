@@ -16,7 +16,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null
+  user: AppUser | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-
+  
   const transformUser = useCallback((supabaseUser: AppUser): User => {
     return {
       id: supabaseUser.id,
@@ -85,16 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth()
 
-    // Listen for auth changes
+    // Listen for auth changes    
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-
       if (session?.user) {
-        setUser(transformUser(session.user))
+        setUser(transformUser(session.user as AppUser))  // ← Safe cast once
       } else {
         setUser(null)
       }
-      setLoading(false)
     })
 
     subscription = data.subscription
