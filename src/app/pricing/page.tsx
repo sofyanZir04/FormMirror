@@ -192,7 +192,7 @@ export default function PricingPage() {
               No credit card required
             </div>
             <div className="flex items-center gap-2">
-              <Check class EclassName="h-5 w-5 text-emerald-400" />
+              <Check className="h-5 w-5 text-emerald-400" />
               Cancel anytime
             </div>
             <div className="flex items-center gap-2">

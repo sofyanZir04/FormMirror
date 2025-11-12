@@ -146,8 +146,10 @@ export default function DashboardPage() {
             <div className="h-12 w-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
               <span className="text-xl font-black">
                 {/* {user?.email?.[0]?.toUpperCase()} */}
-                {user.email.match(/[a-zA-Z]/)?.[0]?.toUpperCase() || 'U'}
-
+                {/* {user.email.match(/[a-zA-Z]/)?.[0]?.toUpperCase() || 'U'} */}
+                {user?.email
+                  ? (user.email.match(/[a-zA-Z]/)?.[0] || 'U').toUpperCase()
+                : 'U'}
               </span>
             </div>
           </div>
