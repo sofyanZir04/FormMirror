@@ -20,8 +20,9 @@ export default function SettingsPage() {
   // SAFELY load user data
   useEffect(() => {
     if (user) {
+      const fullName = user.full_name || '';
       setFormData({
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+        full_name: fullName || user.email?.split('@')[0] || '',
         email: user.email || '',
       })
     }

@@ -22,8 +22,11 @@ export default function FeedbackPage() {
   useEffect(() => {
     if (!user) return
 
-    const fullName = user.user_metadata?.full_name
+    const fullName = user.full_name || ''
     const emailName = user.email?.split('@')[0] || ''
+    
+    // const fullName = user.user_metadata?.full_name    
+    // const emailName = user.email?.split('@')[0] || ''
 
     setForm(prev => ({
       ...prev,
