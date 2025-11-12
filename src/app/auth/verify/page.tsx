@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/browser'
 import { handleEmailConfirmation } from '@/lib/users'
-import { CheckCircle, XCircle, Loader2, Mail, Shield, ArrowRight } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, Mail, Shield, ArrowRight,Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default function VerifyPage() {
