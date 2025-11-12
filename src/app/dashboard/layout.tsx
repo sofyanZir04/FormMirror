@@ -162,22 +162,25 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 transition"
                 >
                   <div className="w-9 h-9 rounded-full overflow-hidden">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.email.split('@')[0])}&background=6366f1&color=ffffff&size=256`}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const img = e.currentTarget
-                        img.style.display = 'none'
-
-                        const fallback = img.nextSibling as HTMLElement | null
-                        if (fallback) {
-                          fallback.classList.remove('hidden')
-                        }
-                      }}
-                    />
-                    <div className="hidden w-full h-full bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {(user.email.match(/[a-zA-Z]/)?.[0] || 'U').toUpperCase()}
+                      <img
+                          src={`https://ui-avatars.com/api/?name=${
+                            user?.email ? encodeURIComponent(user.email.split('@')[0]) : 'User'
+                          }&background=6366f1&color=ffffff&size=256`}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const img = e.currentTarget
+                            img.style.display = 'none'
+                            const fallback = img.nextSibling as HTMLElement | null
+                            if (fallback) {
+                              fallback.classList.remove('hidden')
+                            }
+                          }}
+                      />
+                    <div className="hidden w-full h-full bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {user?.email
+                        ? (user.email.match(/[a-zA-Z]/)?.[0] || 'U').toUpperCase()
+                        : 'U'}
                     </div>
                   </div>
                 </button>
