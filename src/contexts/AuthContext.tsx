@@ -1,11 +1,11 @@
+// src/contexts/AuthContext.tsx
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase/browser'
-import { encryptData } from '@/lib/encryption'
-import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { AppUser } from '@/types/auth'
 
 interface User {
@@ -23,9 +23,6 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-const { data } = await supabase.auth.getUser()
-const user = data.user as AppUser | null
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -33,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  const transformUser = useCallback((supabaseUser: SupabaseUser): User => {
+  const transformUser = useCallback((supabaseUser: AppUser): User => {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email!,
@@ -52,13 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const result = await Promise.race([sessionPromise, timeoutPromise])
 
-    // If timeout wins → return null (treat as no session)
     if (result === null) {
       console.warn('Session check timed out after 3s')
       return { data: { session: null }, error: null }
     }
 
-    return result as { data: { session: any }, error: any }
+    return result as { data: { session: Session | null }, error: any }
   }
 
   useEffect(() => {
@@ -75,10 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('Error getting session:', error)
           setUser(null)
         } else if (session?.user) {
-          // console.log('User authenticated:', session.user.email)
           setUser(transformUser(session.user))
         } else {
-          // console.log('No active session')
           setUser(null)
         }
       } catch (err) {
@@ -94,8 +88,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
-
-      console.log('Auth event:', event)
 
       if (session?.user) {
         setUser(transformUser(session.user))
@@ -123,7 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error
 
       toast.success('Logged in successfully!')
-      // onAuthStateChange will update user
     } catch (error: any) {
       console.error('Login error:', error)
       toast.error(error.message || 'Login failed')
@@ -152,7 +143,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Logged out')
       router.push('/auth/login')
 
-      // Non-blocking logout
       supabase.auth.signOut().catch(console.error)
     } catch (error: any) {
       console.error('Logout error:', error)
@@ -173,4 +163,3 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }
-

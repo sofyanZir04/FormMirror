@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/browser'
-import { useRouter } from 'next/navigation'
 import { Toaster, toast } from 'react-hot-toast'
 import Link from 'next/link'
 import { MessageSquare, Send, CheckCircle, User, Mail, Sparkles, ArrowLeft, X } from 'lucide-react'
+import { AppUser } from '@/types/auth'
 
 export default function FeedbackPage() {
   const { user } = useAuth()
-  const router = useRouter()
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -20,12 +19,12 @@ export default function FeedbackPage() {
     type: 'feedback' as 'feedback' | 'bug' | 'feature'
   })
 
-  // FIXED: Safe access to user_metadata
+  // FIXED: Safe, type-safe access to user_metadata
   useEffect(() => {
     if (!user) return
 
-    const metadata = (user as any).user_metadata as { full_name?: string } | undefined
-    const fullName = metadata?.full_name
+    const appUser = user as AppUser | null
+    const fullName = appUser?.user_metadata?.full_name
     const emailName = user.email?.split('@')[0] || ''
 
     setForm(prev => ({
@@ -34,7 +33,7 @@ export default function FeedbackPage() {
       email: user.email || ''
     }))
   }, [user])
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
