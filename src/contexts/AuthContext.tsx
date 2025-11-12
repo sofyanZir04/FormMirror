@@ -19,7 +19,10 @@ interface User {
   email: string
   plan: 'free' | 'pro'
   lastLogin?: string
-  full_name?: string  // ← Add this
+  full_name?: string
+  /** Added for Settings page */
+  createdAt?: string          // ISO string from Supabase `created_at`
+  provider?: string           // e.g. "google" or "email"
 }
 
 interface AuthContextType {
@@ -51,7 +54,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: supabaseUser.id,
       email: supabaseUser.email!,
       plan: 'free',
-      lastLogin: new Date().toISOString()
+      lastLogin: new Date().toISOString(),
+      full_name: supabaseUser.user_metadata?.full_name,
+      createdAt: supabaseUser.created_at,           // ← new
+      provider: supabaseUser.app_metadata?.provider ?? 'email', // ← new
     }
   }, [])
 

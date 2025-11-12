@@ -1,14 +1,24 @@
 // pages/SettingsPage.tsx
+// pages/SettingsPage.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/browser'
 import Link from 'next/link'
-import { ArrowLeft, Save, User, Mail, Calendar, Shield, CheckCircle, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  Save,
+  User,
+  Mail,
+  Calendar,
+  Shield,
+  CheckCircle,
+  X,
+} from 'lucide-react'
 
 export default function SettingsPage() {
-  const { user } = useAuth() // Removed updateUser
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     full_name: '',
@@ -17,17 +27,18 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
-  // SAFELY load user data
+  /* ────── Load user data safely ────── */
   useEffect(() => {
-    if (user) {
-      const fullName = user.full_name || '';
-      setFormData({
-        full_name: fullName || user.email?.split('@')[0] || '',
-        email: user.email || '',
-      })
-    }
+    if (!user) return
+
+    const fallbackName = user.email?.split('@')[0] ?? ''
+    setFormData({
+      full_name: user.full_name ?? fallbackName,
+      email: user.email ?? '',
+    })
   }, [user])
 
+  /* ────── Submit handler (writes only to profiles table) ────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -37,7 +48,6 @@ export default function SettingsPage() {
     setError('')
 
     try {
-      // Update Supabase profile
       const { error: dbError } = await supabase
         .from('profiles')
         .upsert({
@@ -48,32 +58,34 @@ export default function SettingsPage() {
 
       if (dbError) throw dbError
 
-      // Note: We're not updating auth metadata since updateUser doesn't exist in context
-      // Only profile table is updated
-
       setSuccess('Profile updated successfully!')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile')
+      setError(err.message ?? 'Failed to update profile')
       setTimeout(() => setError(''), 3000)
     } finally {
       setLoading(false)
     }
   }
 
+  /* ────── Helper: initials ────── */
   const getInitials = (name: string) => {
     if (!name) return ''
     return name
       .trim()
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)
   }
 
-  const memberSince = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+  /* ────── Member‑since (fallback to now) ────── */
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+      })
     : 'Unknown'
 
   if (!user) return null
@@ -81,7 +93,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Link */}
+        {/* Back */}
         <Link
           href="/dashboard"
           className="inline-flex items-center text-violet-300 hover:text-white mb-8 text-sm font-medium"
@@ -104,7 +116,9 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <h3 className="text-xl font-black mb-1">{formData.full_name || 'Set Your Name'}</h3>
+              <h3 className="text-xl font-black mb-1">
+                {formData.full_name || 'Set Your Name'}
+              </h3>
               <p className="text-sm opacity-90 mb-4">{formData.email}</p>
 
               <div className="flex items-center gap-2 text-xs opacity-80">
@@ -125,7 +139,9 @@ export default function SettingsPage() {
             {/* Form */}
             <div className="md:col-span-2 p-8">
               <div className="mb-8">
-                <h2 className="text-3xl font-black text-white mb-2">Account Settings</h2>
+                <h2 className="text-3xl font-black text-white mb-2">
+                  Account Settings
+                </h2>
                 <p className="text-gray-300">Keep your profile up to date</p>
               </div>
 
@@ -144,7 +160,7 @@ export default function SettingsPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-7">
-                {/* Email (Read-only) */}
+                {/* Email (read‑only) */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-gray-300 mb-3">
                     <Mail className="h-4 w-4" />
@@ -172,13 +188,15 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, full_name: e.target.value })
+                    }
                     placeholder="Your full name"
                     className="w-full px-5 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
                   />
                 </div>
 
-                {/* Save Button */}
+                {/* Save */}
                 <div className="flex justify-end">
                   <button
                     type="submit"
@@ -197,17 +215,23 @@ export default function SettingsPage() {
                 </div>
               </form>
 
-              {/* Account Info */}
+              {/* Account Details */}
               <div className="mt-10 pt-8 border-t border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4">Account Details</h3>
+                <h3 className="text-lg font-bold text-white mb-4">
+                  Account Details
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-400">User ID</p>
-                    <p className="font-mono text-xs text-gray-300 break-all">{user.id}</p>
+                    <p className="font-mono text-xs text-gray-300 break-all">
+                      {user.id}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-400">Provider</p>
-                    <p className="text-gray-300 capitalize">{user.app_metadata?.provider || 'email'}</p>
+                    <p className="text-gray-300 capitalize">
+                      {user.provider ?? 'email'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -219,17 +243,16 @@ export default function SettingsPage() {
   )
 }
 
-
 // 'use client'
 
 // import { useState, useEffect } from 'react'
 // import { useAuth } from '@/contexts/AuthContext'
 // import { supabase } from '@/lib/supabase/browser'
 // import Link from 'next/link'
-// import { ArrowLeft, Save, User, Mail, Calendar, Shield, CheckCircle,X } from 'lucide-react'
+// import { ArrowLeft, Save, User, Mail, Calendar, Shield, CheckCircle, X } from 'lucide-react'
 
 // export default function SettingsPage() {
-//   const { user, updateUser } = useAuth()
+//   const { user } = useAuth() // Removed updateUser
 //   const [loading, setLoading] = useState(false)
 //   const [formData, setFormData] = useState({
 //     full_name: '',
@@ -241,8 +264,9 @@ export default function SettingsPage() {
 //   // SAFELY load user data
 //   useEffect(() => {
 //     if (user) {
+//       const fullName = user.full_name || '';
 //       setFormData({
-//         full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+//         full_name: fullName || user.email?.split('@')[0] || '',
 //         email: user.email || '',
 //       })
 //     }
@@ -268,10 +292,8 @@ export default function SettingsPage() {
 
 //       if (dbError) throw dbError
 
-//       // Update auth metadata (optional)
-//       if (updateUser) {
-//         await updateUser({ full_name: formData.full_name.trim() })
-//       }
+//       // Note: We're not updating auth metadata since updateUser doesn't exist in context
+//       // Only profile table is updated
 
 //       setSuccess('Profile updated successfully!')
 //       setTimeout(() => setSuccess(''), 3000)
