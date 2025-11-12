@@ -21,6 +21,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  updateUser: (data: { full_name?: string }) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -102,6 +103,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [transformUser])
 
+  const updateUser = useCallback(async (data: { full_name?: string }) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          full_name: data.full_name
+        }
+      });
+
+      if (error) throw error;
+
+      // Update local user state
+      if (user) {
+        setUser({
+          ...user,
+          ...(data.full_name && { full_name: data.full_name })
+        });
+      }
+    } catch (error: any) {
+      console.error('Update user error:', error);
+      toast.error(error.message || 'Failed to update user');
+      throw error;
+    }
+  }, [user]);
+
   const signIn = useCallback(async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -148,8 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router])
 
   const contextValue = useMemo(
-    () => ({ user, loading, signIn, signInWithGoogle, signOut }),
-    [user, loading, signIn, signInWithGoogle, signOut]
+    () => ({ user, loading, signIn, signInWithGoogle, signOut, updateUser }),
+    [user, loading, signIn, signInWithGoogle, signOut, updateUser]
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
