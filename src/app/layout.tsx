@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
-import Script from 'next/script'
+import SupabaseProvider from '@/components/SupabaseProvider'
 import LemonSqueezyScript from './LemonSqueezyScript';
 
 const inter = Inter({ subsets: ['latin'] })
@@ -102,8 +102,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <>    
-      <LemonSqueezyScript/>
+    <>          
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta charSet="utf-8" />
@@ -154,6 +153,7 @@ export default function RootLayout({
           <Toaster position="top-right" />        
     
         </body>
+        <LemonSqueezyScript/>
       </html>
     </>
   )

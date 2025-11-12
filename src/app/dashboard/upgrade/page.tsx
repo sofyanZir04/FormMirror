@@ -1,214 +1,160 @@
-'use client'
+// src/app/dashboard/upgrade/page.tsx
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Check, Star, Zap, Shield, BarChart3, Users, Clock, ArrowRight, X } from 'lucide-react'
-
-// LemonSqueezy Checkout Button
-export function CheckoutButton() {
-  const [isSDKReady, setIsSDKReady] = useState(false)
-  const [loadError, setLoadError] = useState(false)
-
-  useEffect(() => {
-    const init = () => {
-      if (typeof (window as any).createLemonSqueezy === 'function') {
-        try {
-          (window as any).createLemonSqueezy()
-          setIsSDKReady(true)
-          return true
-        } catch (err) {
-          setLoadError(true)
-        }
-      }
-      return false
-    }
-
-    if (init()) return
-
-    const interval = setInterval(() => {
-      if (init() || loadError) clearInterval(interval)
-    }, 100)
-
-    const timeout = setTimeout(() => {
-      clearInterval(interval)
-      if (!isSDKReady) setLoadError(true)
-    }, 10000)
-
-    return () => {
-      clearInterval(interval)
-      clearTimeout(timeout)
-    }
-  }, [isSDKReady, loadError])
-
-  const handleCheckout = () => {
-    const variantId = process.env.NEXT_PUBLIC_LEMONSQUEZY_PRO_VARIANT_ID
-    if (!variantId || loadError || !isSDKReady) {
-      alert('Checkout unavailable. Try disabling ad blockers.')
-      return
-    }
-
-    try {
-      const ls = (window as any).LemonSqueezy
-      ls.Url.Open(`https://checkout.lemonsqueezy.com/buy/${variantId}?embed=1&media=0`)
-      ls.Setup({
-        eventHandler: (e: any) => {
-          if (e.eventName === 'Checkout.Success') {
-            window.location.href = '/dashboard'
-          }
-        },
-      })
-    } catch (err) {
-      alert('Failed to open checkout. Please disable privacy extensions.')
-    }
-  }
-
-  return (
-    <button
-      onClick={handleCheckout}
-      disabled={!isSDKReady || loadError}
-      className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 ${
-        loadError
-          ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-          : isSDKReady
-          ? 'bg-white text-violet-600 hover:bg-gray-100'
-          : 'bg-gray-300 text-gray-500'
-      }`}
-    >
-      {loadError ? (
-        <>Checkout Blocked</>
-      ) : isSDKReady ? (
-        <>
-          Upgrade to Pro <ArrowRight className="h-5 w-5" />
-        </>
-      ) : (
-        <>Loading...</>
-      )}
-    </button>
-  )
-}
+import Script from 'next/script';
+import { CheckoutButton } from '@/components/CheckoutButton';
+import { Check, X } from 'lucide-react';
 
 export default function UpgradePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-xl">
-            <Star className="h-9 w-9 text-white" />
-          </div>
-          <h1 className="text-5xl sm:text-6xl font-black mb-4">
-            Level Up to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">Pro</span>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Unlock deeper insights, longer history, and priority support. Turn form data into revenue.
-          </p>
-          <div className="flex justify-center">
-            <CheckoutButton />
-          </div>
-        </div>
+    <>
+      <Script 
+        src="https://app.lemonsqueezy.com/js/lemon.js" 
+        strategy="lazyOnload"
+        onLoad={() => {
+          console.log('✅ LemonSqueezy script loaded');
+          if (typeof window !== 'undefined' && (window as any).createLemonSqueezy) {
+            (window as any).createLemonSqueezy();
+            console.log('✅ LemonSqueezy initialized');
+          }
+        }}
+        onError={(e) => {
+          console.error('❌ Failed to load LemonSqueezy script:', e);
+        }}
+      />
 
-        {/* Comparison Table */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 mb-16 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-2xl font-black mb-6 text-gray-400">Free</h2>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4">
+              Upgrade to <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pro</span>
+            </h1>
+            <p className="text-xl text-gray-600">
+              Unlock unlimited forms and advanced analytics
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                <div className="text-5xl font-black text-gray-900">
+                  $0
+                  <span className="text-lg font-normal text-gray-500">/month</span>
+                </div>
+                <p className="text-gray-500 mt-2">Current Plan</p>
+              </div>
+
               <ul className="space-y-4">
-                {[
-                  { text: '7-day analytics', icon: Check },
-                  { text: 'Unlimited forms', icon: Check },
-                  { text: 'Basic field insights', icon: Check },
-                  { text: 'Email support', icon: Check, disabled: true },
-                  { text: 'Market benchmarks', icon: X, disabled: true },
-                ].map((item, i) => (
-                  <li key={i} className={`flex items-center gap-3 ${item.disabled ? 'opacity-40' : ''}`}>
-                    <item.icon className={`h-5 w-5 ${item.disabled ? 'text-gray-500' : 'text-emerald-400'}`} />
-                    <span className="text-gray-300">{item.text}</span>
-                  </li>
-                ))}
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-600">Up to 3 projects</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-600">7-day analytics history</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-600">1,000 interactions/month</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-400 line-through">Advanced insights</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-400 line-through">Export data</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-400 line-through">Priority support</span>
+                </li>
               </ul>
             </div>
-            <div>
-              <h2 className="text-2xl font-black mb-6 text-emerald-400 flex items-center gap-3">
-                Pro <Zap className="h-6 w-6" />
-              </h2>
-              <ul className="space-y-4">
-                {[
-                  '90-day analytics history',
-                  'Unlimited forms & events',
-                  'Advanced segmentation',
-                  'Priority chat & email support',
-                  'Market comparison & benchmarks',
-                ].map((text, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-emerald-400" />
-                    <span>{text}</span>
-                  </li>
-                ))}
+
+            <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-2xl p-8 border-2 border-blue-400 relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900 px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🔥 Most Popular
+                </span>
+              </div>
+
+              <div className="text-center mb-6 text-white">
+                <h3 className="text-2xl font-bold mb-2">Pro</h3>
+                <div className="text-5xl font-black">
+                  $19
+                  <span className="text-lg font-normal opacity-80">/month</span>
+                </div>
+                <p className="opacity-90 mt-2">Recommended for growth</p>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">Unlimited projects</span>
+                </li>
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">90-day analytics history</span>
+                </li>
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">50,000 interactions/month</span>
+                </li>
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">Advanced field insights</span>
+                </li>
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">Export data & reports</span>
+                </li>
+                <li className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="font-medium">Priority email support</span>
+                </li>
               </ul>
-            </div>
-          </div>
-        </div>
 
-        {/* Pricing Cards */}
-        <div id="pricing" className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {/* Free Card */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 text-center">
-            <h3 className="text-xl font-bold text-gray-400 mb-3">Free</h3>
-            <div className="text-4xl font-black text-white mb-6">$0</div>
-            <ul className="space-y-3 text-sm text-gray-400 mb-8">
-              <li>7-day history</li>
-              <li>Unlimited forms</li>
-              <li>Basic insights</li>
-            </ul>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-3 px-6 text-sm font-medium text-gray-300">
-              Current Plan
+              <CheckoutButton />
             </div>
           </div>
 
-          {/* Pro Card */}
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 border-4 border-emerald-400 relative overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-300">
-            <div className="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-4 py-1 rounded-full shadow-lg rotate-12">
-              MOST POPULAR
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-4">
+              <details className="bg-white rounded-lg p-6 shadow-md">
+                <summary className="font-semibold text-gray-900 cursor-pointer">
+                  Can I cancel anytime?
+                </summary>
+                <p className="mt-3 text-gray-600">
+                  Yes! You can cancel your subscription at any time. You&apos;ll keep access until the end of your billing period.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg p-6 shadow-md">
+                <summary className="font-semibold text-gray-900 cursor-pointer">
+                  What payment methods do you accept?
+                </summary>
+                <p className="mt-3 text-gray-600">
+                  We accept all major credit cards (Visa, Mastercard, Amex) and PayPal through our secure payment processor.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg p-6 shadow-md">
+                <summary className="font-semibold text-gray-900 cursor-pointer">
+                  What if the embedded checkout doesn&apos;t work?
+                </summary>
+                <p className="mt-3 text-gray-600">
+                  If you have ad blockers enabled, the checkout will automatically open in a new tab. You can also disable your ad blocker temporarily for the best experience.
+                </p>
+              </details>
             </div>
-            <h3 className="text-2xl font-black mb-3">Pro</h3>
-            <div className="text-5xl font-black mb-6">
-              $29<span className="text-xl font-medium">/mo</span>
-            </div>
-            <ul className="space-y-3 text-sm mb-8">
-              <li>90-day analytics</li>
-              <li>Advanced filters</li>
-              <li>Priority support</li>
-              <li>Market benchmarks</li>
-            </ul>
-            <CheckoutButton />
           </div>
-        </div>
-
-        {/* Trust & FAQ */}
-        <div className="text-center space-y-8">
-          <div className="flex justify-center items-center gap-8 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-emerald-400" />
-              No credit card required
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-emerald-400" />
-              Cancel anytime
-            </div>
-          </div>
-          <p className="text-gray-400">
-            Questions?{' '}
-            <Link href="/dashboard/feedback" className="text-emerald-400 hover:underline">
-              Contact support
-            </Link>{' '}
-            or see our{' '}
-            <Link href="/help" className="text-emerald-400 hover:underline">
-              documentation
-            </Link>
-            .
-          </p>
         </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }

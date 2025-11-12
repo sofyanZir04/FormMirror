@@ -8,8 +8,8 @@ export default function LemonSqueezyScript() {
     <Script
         src="https://app.lemonsqueezy.com/js/lemon.js"
         strategy="afterInteractive"
-        onLoad={() => console.log('LemonSqueezy SDK loaded')}
-        onError={() => console.warn('LemonSqueezy SDK failed to load - fallback will be used')}
+        // onLoad={() => console.log('LemonSqueezy SDK loaded')}
+        // onError={() => console.warn('LemonSqueezy SDK failed to load - fallback will be used')}
     />
 
     // <Script

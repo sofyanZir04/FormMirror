@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // ✅ إعدادات CSP والـ favicon معًا
+  // ✅ إعدادات CSP محسّنة
   async headers() {
     return [
       {
@@ -26,11 +26,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.lemonsqueezy.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.lemonsqueezy.com https://assets.lemonsqueezy.com 'wasm-unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "frame-src https://checkout.lemonsqueezy.com",
-              "connect-src 'self' https://app.lemonsqueezy.com https://checkout.lemonsqueezy.com"
+              "connect-src 'self' https://app.lemonsqueezy.com https://checkout.lemonsqueezy.com https://dzxvhnmtomanwiqsnanw.supabase.co https://assets.lemonsqueezy.com"
             ].join('; ')
           }
         ]
