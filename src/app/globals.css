@@ -2,13 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.1); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
 /* Optimized animations - reduced complexity and duration */
 @keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(5px); /* Reduced from 10px */
   }
-  to {
+  to { 
     opacity: 1;
     transform: translateY(0);
   }

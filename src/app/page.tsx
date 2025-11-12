@@ -98,7 +98,7 @@ export function CheckoutButton() {
             ls.Setup({
               eventHandler: (e: any) => {
                 if (e.eventName === 'Checkout.Success') {
-                  console.log('Checkout Success!');
+                  // console.log('Checkout Success!');
                   // Redirect to success page or refresh
                   window.location.href = '/dashboard?upgrade=success';
                 }
@@ -652,15 +652,6 @@ export default function HomePage() {
                   Data export + full API access
                 </li>
               </ul>
-
-              {/* <a
-                href="/dashboard/upgrade"
-                className="block text-center py-3 bg-white text-violet-600 rounded-xl font-bold hover:bg-gray-100 transition"
-                aria-label="Upgrade to Pro and boost your conversions"
-              >
-                Start Converting More Users
-              </a> */}              
-
             <LemonScript/>
             <CheckoutButton/>
 
