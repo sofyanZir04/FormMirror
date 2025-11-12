@@ -167,8 +167,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       alt="Profile"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                        e.currentTarget.nextSibling!.classList.remove('hidden')
+                        const img = e.currentTarget
+                        img.style.display = 'none'
+
+                        const fallback = img.nextSibling as HTMLElement | null
+                        if (fallback) {
+                          fallback.classList.remove('hidden')
+                        }
                       }}
                     />
                     <div className="hidden w-full h-full bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
