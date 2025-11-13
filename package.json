@@ -18,7 +18,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "build": "next build && npm run sitemap",
-    "sitemap": "ts-node scripts/generate-sitemap.ts"
+    "sitemap": "tsc scripts/generate-sitemap.ts --target ES2020 --module commonjs --esModuleInterop --skipLibCheck --outDir .next/scripts && node .next/scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
