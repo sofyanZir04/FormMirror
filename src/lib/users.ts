@@ -23,80 +23,50 @@ export interface Profile {
  */
 export async function ensureUserPlan(userId: string, planType: 'free' | 'pro' = 'free'): Promise<UserPlan | null> {
   try {
-    console.log('🔍 Creating/updating user plan for:', userId)
-    console.log('🔍 Plan type:', planType)
-    console.log('🔍 Supabase client available:', !!supabase)
-    
     // Validate that userId is a valid UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(userId)) {
-      console.error('❌ Invalid UUID format for userId:', userId)
-      console.error('❌ Expected UUID format, got:', typeof userId, userId)
-      return null
+      throw new Error('Invalid userId format. Expected UUID.')
     }
 
-    console.log('✅ UUID validation passed for:', userId)
-
     // Check if user plan already exists
-    console.log('🔍 Checking if user plan exists...')
     const { data: existingPlan, error: checkError } = await supabase
       .from('user_plans')
       .select('*')
       .eq('user_id', userId)
       .single()
-    console.log('🔍 Existing plan:', existingPlan)
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" which is expected
-      console.error('❌ Error checking existing plan:', checkError)
-      return null
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw new Error(`Failed to check existing user plan: ${checkError.message}`)
     }
 
     if (existingPlan) {
-      console.log('✅ User plan already exists:', existingPlan.id)
       return existingPlan
     }
 
-    console.log('🔍 Creating new user plan...')
     // Create new user plan
     const { data: newPlan, error } = await supabase
       .from('user_plans')
       .insert({
         user_id: userId,
         plan_type: planType,
-        subscription_id: null,
-        plan_expires_at: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: 'active',
+        start_date: new Date().toISOString(),
       })
       .select()
       .single()
 
     if (error) {
-      console.error('❌ Failed to create user plan:', error)
-      console.error('❌ Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      })
-      console.error('❌ Full error object:', JSON.stringify(error, null, 2))
-      console.error('❌ Error keys:', Object.keys(error))
-      console.error('❌ Error values:', Object.values(error))
-      console.error('❌ Error constructor:', error.constructor.name)
-      return null
+      throw new Error(`Failed to create user plan: ${error.message}`)
     }
 
     if (!newPlan) {
-      console.error('❌ No data returned after insert')
-      return null
+      throw new Error('Failed to create user plan: No data returned.')
     }
 
-    console.log('✅ Created new user plan:', newPlan.id)
     return newPlan
   } catch (error) {
     console.error('🚨 Error ensuring user plan:', error)
-    console.error('🚨 Error type:', typeof error)
-    console.error('🚨 Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return null
   }
 }
@@ -309,10 +279,22 @@ export const testUserPlanCreation = async (testUserId: string) => {
     
     // Test basic database connection
     console.log('🧪 Testing database connection...')
-    const { data: testData, error: testError } = await supabase
+    const { error: testError } = await supabase
       .from('user_plans')
-      .select('count')
+      .select('*')
       .limit(1)
+    
+    // This is a test function and should not be used in production
+    // const { data: testData, error: testError } = await supabase
+    //   .from('user_plans')
+    //   .select('*')
+    //   .limit(1)
+
+    // if (testError) {
+    //   console.error('Test error:', testError)
+    // }
+
+    // console.log('Test data:', testData)
     
     if (testError) {
       console.error('🧪 Database connection test failed:', testError)
@@ -368,4 +350,4 @@ export const testDatabaseAccess = async () => {
     console.error('🧪 Database access test failed:', error)
     return { error, step: 'exception' }
   }
-} 
+}

@@ -1,5 +1,5 @@
 // pages/SettingsPage.tsx
-// pages/SettingsPage.tsx
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -60,8 +60,8 @@ export default function SettingsPage() {
 
       setSuccess('Profile updated successfully!')
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to update profile')
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to update profile')
       setTimeout(() => setError(''), 3000)
     } finally {
       setLoading(false)
@@ -242,7 +242,6 @@ export default function SettingsPage() {
     </div>
   )
 }
-
 // 'use client'
 
 // import { useState, useEffect } from 'react'
@@ -297,8 +296,8 @@ export default function SettingsPage() {
 
 //       setSuccess('Profile updated successfully!')
 //       setTimeout(() => setSuccess(''), 3000)
-//     } catch (err: any) {
-//       setError(err.message || 'Failed to update profile')
+//     } catch (err: unknown) {
+//       setError((err as Error).message || 'Failed to update profile')
 //       setTimeout(() => setError(''), 3000)
 //     } finally {
 //       setLoading(false)

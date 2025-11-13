@@ -12,7 +12,7 @@ interface LocalizedRoute {
 }
 
 async function generateSitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://formmirror.com'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!
   const now = new Date().toISOString().split('T')[0] // 2025-11-10
 
   // 1. Supported Languages: USA (en), EU (en, fr, de)

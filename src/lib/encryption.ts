@@ -1,7 +1,7 @@
 import CryptoJS from 'crypto-js'
 
 // Encryption key - in production, this should be from environment variables
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-super-secret-encryption-key-change-this-in-production'
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY!
 
 // AES encryption for sensitive data
 export const encryptData = (data: any): string => {
