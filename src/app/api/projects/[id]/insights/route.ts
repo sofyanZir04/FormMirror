@@ -494,6 +494,8 @@ function generateFallbackInsights(
     nextSteps: nextSteps.slice(0, 5)
   }
 }
+
+
 // import { NextRequest, NextResponse } from 'next/server'
 // import { createServerSupabaseClient } from '@/lib/supabase'
 // import { GoogleGenerativeAI } from '@google/generative-ai'
