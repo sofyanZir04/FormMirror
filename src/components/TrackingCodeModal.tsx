@@ -20,11 +20,11 @@ const FRAMEWORKS = [
   { id: 'html', name: 'HTML', popular: true },
   { id: 'react', name: 'React', popular: true },
   { id: 'nextjs', name: 'Next.js', popular: true },
-  { id: 'vue', name: 'Vue' },
-  { id: 'vanilla', name: 'Vanilla JS' },
-  { id: 'angular', name: 'Angular' },
-  { id: 'svelte', name: 'Svelte' },
-] as const satisfies readonly { id: string; name: string; popular?: boolean }[]
+  { id: 'vue', name: 'Vue', popular: false },
+  { id: 'vanilla', name: 'Vanilla JS', popular: false },
+  { id: 'angular', name: 'Angular', popular: false },
+  { id: 'svelte', name: 'Svelte', popular: false },
+] as const
 
 const generateCode = (framework: string, projectId: string, projectName: string) => {
   const scriptUrl = `${SITE_URL}/track.js`
