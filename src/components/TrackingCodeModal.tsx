@@ -1,17 +1,22 @@
+// src/components/TrackingCodeModal.tsx
+declare module 'react-syntax-highlighter' {
+  import { PrismLight } from 'react-syntax-highlighter'
+  export { PrismLight }
+}
+
+// Now your imports work perfectly
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Copy, Check, X, Sparkles, Globe, Code2 } from 'lucide-react'
-
-// Use the lightweight Prism with built-in types (no @types needed!)
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx'
-import html from 'react-syntax-highlighter/dist/esm/languages/prism/markup'
+import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
-// Register languages once
+// Register languages (only once)
 SyntaxHighlighter.registerLanguage('tsx', tsx)
-SyntaxHighlighter.registerLanguage('html', html)
+SyntaxHighlighter.registerLanguage('html', markup)
 
 interface TrackingCodeModalProps {
   projectId: string
