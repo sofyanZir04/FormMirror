@@ -10,7 +10,7 @@ FormMirror Privacy-First Tracking Snippet
   // Get projectId from DOM attribute
   var projectId = document.currentScript.getAttribute('data-project-id');
   var formSelector = document.currentScript.getAttribute('data-form-selector') || 'form';
-  var apiEndpoint = 'http://localhost:3000/api/track';
+  var apiEndpoint = 'https://formmirror.vercel.app/api/track';
 
   // If no projectId, do not send events
   if (!projectId) {
@@ -21,13 +21,13 @@ FormMirror Privacy-First Tracking Snippet
   // Generate a session ID (not user-specific, resets on reload)
   var sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-  console.log('🚀 FormMirror tracking initialized:', { 
-    projectId, 
-    formSelector, 
-    apiEndpoint,
-    userAgent: navigator.userAgent,
-    timestamp: new Date().toISOString()
-  });
+  // console.log('🚀 FormMirror tracking initialized:', { 
+  //   projectId, 
+  //   formSelector, 
+  //   apiEndpoint,
+  //   userAgent: navigator.userAgent,
+  //   timestamp: new Date().toISOString()
+  // });
   
   // Validate project ID
   if (!projectId) {
@@ -53,7 +53,7 @@ FormMirror Privacy-First Tracking Snippet
       session_id: sessionId
     };
 
-    console.log('📤 Sending event:', event);
+    // console.log('📤 Sending event:', event);
 
     // Use sendBeacon for better performance and reliability
     if (navigator.sendBeacon) {
@@ -62,7 +62,7 @@ FormMirror Privacy-First Tracking Snippet
         console.warn('⚠️ sendBeacon failed, falling back to fetch');
         sendEventWithFetch(event);
       } else {
-        console.log('✅ Event sent via sendBeacon');
+        // console.log('✅ Event sent via sendBeacon');
       }
     } else {
       // Fallback to fetch
@@ -79,7 +79,7 @@ FormMirror Privacy-First Tracking Snippet
       body: JSON.stringify(event)
     })
     .then(async response => {
-      console.log('📡 Response status:', response.status);
+      // console.log('📡 Response status:', response.status);
       let data;
       try {
         data = await response.json();
@@ -90,7 +90,7 @@ FormMirror Privacy-First Tracking Snippet
         console.error('❌ Error response from API:', data);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log('✅ Event sent successfully:', data);
+      // console.log('✅ Event sent successfully:', data);
       retryCount = 0; // Reset retry count on success
     })
     .catch(error => {
@@ -100,7 +100,7 @@ FormMirror Privacy-First Tracking Snippet
       }
       // Retry logic
       if (retryAttempt < maxRetries) {
-        console.log(`🔄 Retrying... (${retryAttempt + 1}/${maxRetries})`);
+        // console.log(`🔄 Retrying... (${retryAttempt + 1}/${maxRetries})`);
         setTimeout(() => {
           sendEventWithFetch(event, retryAttempt + 1);
         }, 1000 * (retryAttempt + 1)); // Exponential backoff
@@ -115,7 +115,7 @@ FormMirror Privacy-First Tracking Snippet
     const field = event.target;
     const fieldName = field.name || field.id || field.className || 'unknown';
     
-    console.log('🎯 Field focused:', fieldName, field);
+    // console.log('🎯 Field focused:', fieldName, field);
     
     fieldData.set(field, {
       focusTime: Date.now(),
@@ -132,7 +132,7 @@ FormMirror Privacy-First Tracking Snippet
     
     if (data) {
       const duration = Date.now() - data.focusTime;
-      console.log('👋 Field blurred:', data.fieldName, 'Duration:', duration + 'ms');
+      // console.log('👋 Field blurred:', data.fieldName, 'Duration:', duration + 'ms');
       sendEvent('blur', data.fieldName, duration);
       fieldData.delete(field);
     }
@@ -144,7 +144,7 @@ FormMirror Privacy-First Tracking Snippet
     const fieldName = field.name || field.id || field.className || 'unknown';
     const value = field.value || field.textContent || '';
     
-    console.log('✏️ Input detected:', fieldName, 'Value length:', value.length);
+    // console.log('✏️ Input detected:', fieldName, 'Value length:', value.length);
     sendEvent('input', fieldName);
   }
 
@@ -154,7 +154,7 @@ FormMirror Privacy-First Tracking Snippet
     const form = event.target;
     const formName = form.name || form.id || form.className || 'form';
     
-    console.log('📝 Form submitted:', formName);
+    // console.log('📝 Form submitted:', formName);
     
     // Send submit event for the form
     sendEvent('submit', formName);
@@ -162,7 +162,7 @@ FormMirror Privacy-First Tracking Snippet
     // Send abandon events for any remaining focused fields
     fieldData.forEach((data, field) => {
       const duration = Date.now() - data.focusTime;
-      console.log('🚫 Field abandoned on submit:', data.fieldName, 'Duration:', duration + 'ms');
+      // console.log('🚫 Field abandoned on submit:', data.fieldName, 'Duration:', duration + 'ms');
       sendEvent('abandon', data.fieldName, duration);
     });
     
@@ -173,7 +173,7 @@ FormMirror Privacy-First Tracking Snippet
   function handleBeforeUnload() {
     if (!isFormSubmitted) {
       const totalDuration = Date.now() - formStartTime;
-      console.log('🚪 Page unloading, form abandoned. Total duration:', totalDuration + 'ms');
+      // console.log('🚪 Page unloading, form abandoned. Total duration:', totalDuration + 'ms');
       
       sendEvent('abandon', 'form', totalDuration);
       
@@ -189,14 +189,14 @@ FormMirror Privacy-First Tracking Snippet
   function initializeTracking() {
     const forms = document.querySelectorAll(formSelector);
     
-    console.log('🔍 Found forms:', forms.length);
+    // console.log('🔍 Found forms:', forms.length);
     
     if (forms.length === 0) {
       console.warn('⚠️ No forms found with selector:', formSelector);
     }
     
     forms.forEach((form, index) => {
-      console.log(`📋 Initializing form ${index + 1}:`, form);
+      // console.log(`📋 Initializing form ${index + 1}:`, form);
       
       // Track form submission
       form.addEventListener('submit', handleSubmit);
@@ -204,11 +204,11 @@ FormMirror Privacy-First Tracking Snippet
       // Track all form fields
       const fields = form.querySelectorAll('input, textarea, select, button[type="submit"]');
       
-      console.log(`📝 Found ${fields.length} fields in form ${index + 1}`);
+      // console.log(`📝 Found ${fields.length} fields in form ${index + 1}`);
       
       fields.forEach((field, fieldIndex) => {
         const fieldName = field.name || field.id || field.className || `field_${fieldIndex}`;
-        console.log(`🎯 Adding listeners to field ${fieldIndex + 1}:`, fieldName);
+        // console.log(`🎯 Adding listeners to field ${fieldIndex + 1}:`, fieldName);
         
         field.addEventListener('focus', handleFocus);
         field.addEventListener('blur', handleBlur);
@@ -221,15 +221,15 @@ FormMirror Privacy-First Tracking Snippet
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handleBeforeUnload);
     
-    console.log('✅ FormMirror tracking initialized successfully');
+    // console.log('✅ FormMirror tracking initialized successfully');
   }
 
   // Start tracking when DOM is ready
   if (document.readyState === 'loading') {
-    console.log('⏳ DOM loading, waiting for DOMContentLoaded...');
+    // console.log('⏳ DOM loading, waiting for DOMContentLoaded...');
     document.addEventListener('DOMContentLoaded', initializeTracking);
   } else {
-    console.log('⚡ DOM already ready, initializing immediately...');
+    // console.log('⚡ DOM already ready, initializing immediately...');
     initializeTracking();
   }
 
@@ -245,7 +245,7 @@ FormMirror Privacy-First Tracking Snippet
           
           forms.forEach(form => {
             if (!form.hasAttribute('data-formmirror-tracked')) {
-              console.log('🆕 Dynamic form detected, adding tracking:', form);
+              // console.log('🆕 Dynamic form detected, adding tracking:', form);
               form.setAttribute('data-formmirror-tracked', 'true');
               form.addEventListener('submit', handleSubmit);
               
@@ -268,6 +268,6 @@ FormMirror Privacy-First Tracking Snippet
     subtree: true
   });
 
-  console.log('🔍 MutationObserver started for dynamic content');
+  // console.log('🔍 MutationObserver started for dynamic content');
 
 })(); 

@@ -1,3 +1,4 @@
+// src/hooks/useUserPlan.ts
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -17,25 +18,18 @@ export interface UserPlan {
     free: PlanFeatures
     pro: PlanFeatures
   }
-  realData?: {
-    planId: string
-    userId: string
-    planType: string
-    createdAt: string
-    updatedAt: string
-  }
+  realData?: any
 }
 
-// In-memory cache
+// Simple in-memory cache
 const planCache = new Map<string, UserPlan>()
 
 export function useUserPlan() {
   const { user } = useAuth()
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null)
-  const [loading, setLoading] = useState(true) // Start true for accurate UX
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const lastUserId = useRef<string | null>(null)
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const fetchPlan = useCallback(async () => {
     if (!user?.id) {
@@ -44,10 +38,9 @@ export function useUserPlan() {
       return
     }
 
-    // 1. Check cache first
+    // Use cache if available
     const cached = planCache.get(user.id)
     if (cached) {
-      console.log('Using cached plan')
       setUserPlan(cached)
       setLoading(false)
       return
@@ -58,51 +51,24 @@ export function useUserPlan() {
 
     try {
       const res = await fetch(`/api/user/plan?userId=${user.id}`, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-        // Optional: Add timeout
-        signal: AbortSignal.timeout(15000),
+        cache: 'no-store',
       })
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-      }
+      if (!res.ok) throw new Error(`Failed to fetch plan`)
 
       const data = await res.json()
+      if (!data?.plan) throw new Error('No plan data')
 
-      if (!data?.plan) {
-        throw new Error('Invalid response: missing plan')
-      }
-
-      // Cache & update
       planCache.set(user.id, data.plan)
       setUserPlan(data.plan)
-      setError(null)
-
     } catch (err: any) {
-      const msg = err.name === 'TimeoutError' 
-        ? 'Request timed out' 
-        : err.message || 'Network error'
-
-      console.error('Plan fetch failed:', msg)
-      setError(msg)
-
-      // Retry once after 600ms
-      if (!retryTimeoutRef.current) {
-        retryTimeoutRef.current = setTimeout(() => {
-          retryTimeoutRef.current = null
-          fetchPlan()
-        }, 600)
-      }
+      console.error('useUserPlan error:', err)
+      setError(err.message || 'Failed to load plan')
     } finally {
       setLoading(false)
     }
   }, [user?.id])
-  
 
-  // Fetch on user change
   useEffect(() => {
     if (user?.id && lastUserId.current !== user.id) {
       lastUserId.current = user.id
@@ -111,28 +77,18 @@ export function useUserPlan() {
       setUserPlan(null)
       setLoading(false)
     }
-
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current)
-        retryTimeoutRef.current = null
-      }
-    }
   }, [user?.id, fetchPlan])
 
-  // Memoized return values
   return {
     userPlan,
-    isPro: userPlan?.isPro ?? false,
     plan: userPlan?.plan ?? 'free',
+    isPro: userPlan?.isPro ?? false,
     features: userPlan?.features,
     loading,
     error,
-    hasRealData: !!userPlan?.realData,
     refetch: fetchPlan,
   }
 }
-
 
 // 'use client'
 

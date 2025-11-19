@@ -13,6 +13,7 @@ import {
 import Link from 'next/link'
 import TrackingCodeModal from '@/components/TrackingCodeModal'
 import { useUserPlan } from '@/hooks/useUserPlan'
+import { useInsightsAccess } from '@/hooks/useInsightsAccess'
 import EnhancedInsights from '@/components/EnhancedInsights'
 
 // ────────────────────────────────────────────────────────────────
@@ -165,7 +166,17 @@ function EventCard({ event }: { event: FormEvent }) {
 export default function ProjectDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const { isPro } = useUserPlan()
+
+  // const insightsAccess = useInsightsAccess()
+  const { 
+    hasAccess: hasInsightsAccess, 
+    isInTrial, 
+    trialDaysLeft,
+    loading: insightsLoading
+  } = useInsightsAccess()
+
+  const { isPro, loading: planLoading } = useUserPlan()  
+  // const { isPro } = useUserPlan()
   const [project, setProject] = useState<Project | null>(null)
   const [events, setEvents] = useState<FormEvent[]>([])
   const [showTrackingModal, setShowTrackingModal] = useState(false)
@@ -181,76 +192,40 @@ export default function ProjectDetailPage() {
   const [isPending, startTransition] = useTransition()
 
   // ──── FETCH ALL DATA IN PARALLEL ────
+  // ──── FETCH ALL DATA IN PARALLEL ────
   useEffect(() => {
     if (!id || !user) return
 
     const fetchAll = async () => {
-      // console.log('[ProjectPage] Starting data fetch for project:', id, 'Date range:', dateRange)
       const days = dateRange
       const fromDate = new Date(Date.now() - days * 86400000).toISOString()
 
       try {
-        // Fetch project
-        // console.log('[ProjectPage] Fetching project details...')
-        const projRes = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', user.id)
-          .single()
-        
-        // if (projRes.error) {
-        //   console.error('[ProjectPage] Project fetch error:', projRes.error)
-        // } else {
-        //   console.log('[ProjectPage] Project loaded:', projRes.data?.name)
-        // }
+        // Always fetch project + events
+        const [projRes, eventsRes] = await Promise.all([
+          supabase.from('projects').select('*').eq('id', id).eq('user_id', user.id).single(),
+          supabase.from('form_events')
+            .select('*')
+            .eq('project_id', id)
+            .gte('created_at', fromDate)
+            .order('created_at', { ascending: false })
+        ])
 
-        // Fetch events
-        // console.log('[ProjectPage] Fetching events since:', fromDate)
-        const eventsRes = await supabase
-          .from('form_events')
-          .select('*')
-          .eq('project_id', id)
-          .gte('created_at', fromDate)
-          .order('created_at', { ascending: false })
-        
-        // if (eventsRes.error) {
-        //   console.error('[ProjectPage] Events fetch error:', eventsRes.error)
-        // } else {
-        //   console.log('[ProjectPage] Events loaded:', eventsRes.data?.length)
-        // }
-
-        // Fetch insights (only for Pro users)
+        // Fetch insights if user has access (Pro OR in trial)
         let insightsRes = null
-        if (isPro) {
-          // console.log('[ProjectPage] Fetching AI insights...')
+        if (hasInsightsAccess && !insightsLoading) {  // ← THIS IS THE KEY CHANGE
           try {
-            const response = await fetch(`/api/projects/${id}/insights?days=${days}`, { 
+            const response = await fetch(`/api/projects/${id}/insights?days=${days}`, {
               cache: 'no-store',
-              headers: {
-                'Content-Type': 'application/json'
-              }
             })
-            
-            if (!response.ok) {
-              // console.error('[ProjectPage] Insights API returned:', response.status, response.statusText)
-              const errorText = await response.text()
-              // console.error('[ProjectPage] Error response:', errorText)
-            } else {
+            if (response.ok) {
               insightsRes = await response.json()
-              // console.log('[ProjectPage] Insights loaded successfully:', {
-              //   hasKillerField: !!insightsRes.killerField,
-              //   criticalIssues: insightsRes.aiInsights?.criticalIssues?.length || 0,
-              //   totalEvents: insightsRes.stats?.totalEvents,
-              //   windowDays: insightsRes.stats?.windowDays
-              // })
             }
-          } catch (fetchError) {
-            console.error('[ProjectPage] Insights fetch failed:', fetchError)
+          } catch (err) {
+            console.error('Insights fetch failed during trial:', err)
           }
         }
 
-        // Update state
         startTransition(() => {
           if (projRes.data) setProject(projRes.data)
           if (eventsRes.data) {
@@ -258,18 +233,107 @@ export default function ProjectDetailPage() {
             calculateStats(eventsRes.data)
           }
           if (insightsRes) {
-            setInsights(insightsRes)
+            setInsights(insightsRes)  // ← Now trial users get real data
+          } else if (!hasInsightsAccess) {
+            setInsights(null)         // ← Explicitly clear for non-access users
           }
         })
-
-        // console.log('[ProjectPage] All data loaded and state updated')
       } catch (error) {
-        console.error('[ProjectPage] Fatal error in fetchAll:', error)
+        console.error('Fatal error in fetchAll:', error)
       }
     }
 
     fetchAll()
-  }, [id, user, isPro, dateRange]) // Added dateRange to dependencies
+  }, [id, user, dateRange, hasInsightsAccess, insightsLoading])  // ← Critical dependencies!
+  // useEffect(() => {
+  //   if (!id || !user) return
+
+  //   const fetchAll = async () => {
+  //     // console.log('[ProjectPage] Starting data fetch for project:', id, 'Date range:', dateRange)
+  //     const days = dateRange
+  //     const fromDate = new Date(Date.now() - days * 86400000).toISOString()
+
+  //     try {
+  //       // Fetch project
+  //       // console.log('[ProjectPage] Fetching project details...')
+  //       const projRes = await supabase
+  //         .from('projects')
+  //         .select('*')
+  //         .eq('id', id)
+  //         .eq('user_id', user.id)
+  //         .single()
+        
+  //       // if (projRes.error) {
+  //       //   console.error('[ProjectPage] Project fetch error:', projRes.error)
+  //       // } else {
+  //       //   console.log('[ProjectPage] Project loaded:', projRes.data?.name)
+  //       // }
+
+  //       // Fetch events
+  //       // console.log('[ProjectPage] Fetching events since:', fromDate)
+  //       const eventsRes = await supabase
+  //         .from('form_events')
+  //         .select('*')
+  //         .eq('project_id', id)
+  //         .gte('created_at', fromDate)
+  //         .order('created_at', { ascending: false })
+        
+  //       // if (eventsRes.error) {
+  //       //   console.error('[ProjectPage] Events fetch error:', eventsRes.error)
+  //       // } else {
+  //       //   console.log('[ProjectPage] Events loaded:', eventsRes.data?.length)
+  //       // }
+
+  //       // Fetch insights (only for Pro users)
+  //       let insightsRes = null
+  //       if (isPro) {
+  //         // console.log('[ProjectPage] Fetching AI insights...')
+  //         try {
+  //           const response = await fetch(`/api/projects/${id}/insights?days=${days}`, { 
+  //             cache: 'no-store',
+  //             headers: {
+  //               'Content-Type': 'application/json'
+  //             }
+  //           })
+            
+  //           if (!response.ok) {
+  //             // console.error('[ProjectPage] Insights API returned:', response.status, response.statusText)
+  //             const errorText = await response.text()
+  //             // console.error('[ProjectPage] Error response:', errorText)
+  //           } else {
+  //             insightsRes = await response.json()
+  //             // console.log('[ProjectPage] Insights loaded successfully:', {
+  //             //   hasKillerField: !!insightsRes.killerField,
+  //             //   criticalIssues: insightsRes.aiInsights?.criticalIssues?.length || 0,
+  //             //   totalEvents: insightsRes.stats?.totalEvents,
+  //             //   windowDays: insightsRes.stats?.windowDays
+  //             // })
+  //           }
+  //         } catch (fetchError) {
+  //           console.error('[ProjectPage] Insights fetch failed:', fetchError)
+  //         }
+  //       }
+
+  //       // Update state
+  //       startTransition(() => {
+  //         if (projRes.data) setProject(projRes.data)
+  //         if (eventsRes.data) {
+  //           setEvents(eventsRes.data)
+  //           calculateStats(eventsRes.data)
+  //         }
+  //         if (insightsRes) {
+  //           setInsights(insightsRes)
+  //         }
+  //       })
+
+  //       // console.log('[ProjectPage] All data loaded and state updated')
+  //     } catch (error) {
+  //       console.error('[ProjectPage] Fatal error in fetchAll:', error)
+  //     }
+  //   }
+
+  //   fetchAll()
+  // }, [id, user, isPro, dateRange]) // Added dateRange to dependencies
   
   const calculateStats = (eventsList: FormEvent[]) => {
     const uniqueUsers = new Set(eventsList.map(e => e.session_id)).size
@@ -363,7 +427,7 @@ export default function ProjectDetailPage() {
           </div>
           {!isPro && dateRange === 7 && (
             <Link 
-              href="/dashboard/pricing" 
+              href="/pricing" 
               className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
             >
               <Zap className="h-4 w-4" />
@@ -374,7 +438,29 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Pro Banner */}
-      {!isPro && (
+      {!isPro && !insightsLoading && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="bg-gradient-to-r from-emerald-500/20 to-teal-600/20 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Zap className="h-8 w-8 text-emerald-400" />
+              <div>
+                <h3 className="text-lg font-black">
+                  {isInTrial ? `Free Trial Active – ${trialDaysLeft} days left!` : 'Unlock Pro Analytics'}
+                </h3>
+                <p className="text-sm text-gray-300">
+                  {isInTrial 
+                    ? 'AI insights, 90-day history, and more – upgrade to keep them forever' 
+                    : '90-day history • AI insights • Export • Priority support'}
+                </p>
+              </div>
+            </div>
+            <Link href="/pricing" className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl font-bold hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-105 shadow-xl">
+              {isInTrial ? 'Upgrade Now' : 'Go Pro'}
+            </Link>
+          </div>
+        </div>
+      )}
+      {/* {!isPro && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
           <div className="bg-gradient-to-r from-emerald-500/20 to-teal-600/20 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -384,12 +470,12 @@ export default function ProjectDetailPage() {
                 <p className="text-sm text-gray-300">90-day history • AI insights • Export • Priority support</p>
               </div>
             </div>
-            <Link href="/dashboard/pricing" className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl font-bold hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-105 shadow-xl">
+            <Link href="/pricing" className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl font-bold hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-105 shadow-xl">
               Upgrade Now
             </Link>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Stats */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -438,7 +524,59 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Insights & Privacy */}
+      {/* AI Insights Section */}
+      {/* AI Insights Section – NOW WORKS PERFECTLY */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+        {insightsLoading || planLoading ? (
+          <InsightsSkeleton />
+        ) : hasInsightsAccess ? (
+          // User has access → show banner + insights (trial) OR just insights (Pro)
+          <>
+            {/* Trial celebration banner – only for non-Pro */}
+            {!isPro && (
+              <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 backdrop-blur-xl rounded-3xl p-8 border border-purple-500/50 text-center mb-8 shadow-2xl">
+                <Sparkles className="h-14 w-14 text-purple-300 mx-auto mb-4" />
+                <h3 className="text-3xl font-black mb-3 text-white">Free Trial Active! 🎉</h3>
+                <p className="text-xl text-gray-100 mb-3">
+                  AI Insights unlocked for <strong className="text-yellow-400 text-2xl">{trialDaysLeft}</strong> more {trialDaysLeft === 1 ? 'day' : 'days'}!
+                </p>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl"
+                >
+                  <Zap className="h-6 w-6" />
+                  Keep Forever – Upgrade Now
+                </Link>
+              </div>
+            )}
+
+            {/* Actual AI Insights – shown for both Pro and Trial */}
+            {insights ? (
+              <EnhancedInsights insights={insights} />
+            ) : (
+              <InsightsSkeleton />
+            )}
+          </>
+        ) : (
+          // No access → locked
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 text-center">
+            <Sparkles className="h-16 w-16 text-purple-400/50 mx-auto mb-6" />
+            <h3 className="text-2xl font-black mb-4 text-white">AI Insights Locked</h3>
+            <p className="text-lg text-gray-300 mb-8 max-w-md mx-auto">
+              Your free trial has ended. Upgrade to Pro to get AI-powered analysis.
+            </p>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-2xl"
+            >
+              <ShieldCheck className="h-6 w-6" />
+              Unlock Pro Insights
+            </Link>
+          </div>
+        )}
+      </div>      
+
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
         {isPro && insights ? (
           <EnhancedInsights insights={insights} />
         ) : isPro ? (
@@ -450,12 +588,12 @@ export default function ProjectDetailPage() {
             <p className="text-gray-300 mb-4">
               Get deep behavioral analysis, actionable recommendations, and growth opportunities
             </p>
-            <Link href="/dashboard/pricing" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold hover:from-purple-700 hover:to-blue-700 transition-all">
+            <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold hover:from-purple-700 hover:to-blue-700 transition-all">
               Upgrade to Pro
             </Link>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Event Breakdown */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
