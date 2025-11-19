@@ -24,7 +24,7 @@ const FRAMEWORKS = [
   { id: 'vanilla', name: 'Vanilla JS' },
   { id: 'angular', name: 'Angular' },
   { id: 'svelte', name: 'Svelte' },
-] as const
+] as const satisfies readonly { id: string; name: string; popular?: boolean }[]
 
 const generateCode = (framework: string, projectId: string, projectName: string) => {
   const scriptUrl = `${SITE_URL}/track.js`
