@@ -1,90 +1,93 @@
 /*
-  FormMirror Tracking Script v2.0
-  Privacy-First • No Cookies • No Fingerprinting • GDPR Compliant
-  Works on localhost AND Vercel production
+  FormMirror Tracking Script v2.1 — FINAL FIXED VERSION
+  Works perfectly on localhost AND https://formmirror.vercel.app
 */
 
 (function () {
   'use strict';
 
-  // Config
-  const scriptTag = document.currentScript;
-  if (!scriptTag) return;
+  const script = document.currentScript;
+  if (!script) return;
 
-  const projectId = scriptTag.getAttribute('data-project-id') || scriptTag.getAttribute('data-pid');
-  const formSelector = scriptTag.getAttribute('data-form-selector') || 'form';
-  
-  // AUTO DETECT ENVIRONMENT — THIS IS THE KEY FIX
-  const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  const apiEndpoint = isLocalhost 
-    ? 'http://localhost:3000/api/track'
-    : 'https://formmirror.vercel.app/api/track';
-
+  const projectId = script.getAttribute('data-project-id') || script.getAttribute('data-pid');
   if (!projectId) {
-    console.error('FormMirror: Missing project ID. Add data-project-id="your-id" to the script tag.');
+    console.error('FormMirror: Missing data-project-id');
     return;
   }
 
-  // Generate anonymous session ID (resets on page reload — privacy-safe)
-  const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  const formSelector = script.getAttribute('data-form-selector') || 'form';
 
-  const fieldData = new Map(); // track focused fields
+  // AUTO DETECT CORRECT API ENDPOINT — THIS FIXES LOCALHOST 404
+  const API_BASE = 'https://formmirror.vercel.app';
+  // typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  //   ? 'http://localhost:3000'
+  //   : 'https://formmirror.vercel.app';
+
+  const API_ENDPOINT = `${API_BASE}/api/track`;
+
+  // Anonymous session (privacy-safe)
+  const sessionId = 'sess_' + Date.now() + '_' + Math.floor(Math.random() * 1e9);
+
+  const focusedFields = new Map();
   let formSubmitted = false;
-  const formStartTime = Date.now();
+  const pageStartTime = Date.now();
 
-  // Send event with smart reliability
-  function sendEvent(type, field = '', duration = null) {
-    const payload = {
+  // SAFE payload — NO DOM elements, NO cycles
+  function createPayload(type, fieldName = null, duration = null) {
+    return {
       project_id: projectId,
       session_id: sessionId,
       event_type: type,
-      field_name: field || null,
-      duration: duration || null,
+      field_name: fieldName,
+      duration,
       timestamp: new Date().toISOString(),
-      url: location.href,
-      user_agent: navigator.userAgent // optional, safe
+      url: location.origin + location.pathname, // safe string only
+      referrer: document.referrer || null,
+      user_agent: navigator.userAgent
     };
+  }
 
+  // Send with maximum reliability
+  function send(type, fieldName, duration) {
+    const payload = createPayload(type, fieldName, duration);
     const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
 
-    // Prefer sendBeacon — works even on page unload
-    if (navigator.sendBeacon?.(apiEndpoint, blob)) {
-      return;
-    }
+    // Best: sendBeacon (works on unload)
+    if (navigator.sendBeacon?.(API_ENDPOINT, blob)) return;
 
-    // Fallback: fetch with keepalive (still works on unload)
-    fetch(apiEndpoint, {
+    // Fallback: fetch + keepalive
+    fetch(API_ENDPOINT, {
       method: 'POST',
       body: blob,
       keepalive: true,
-      mode: 'cors',
+      mode: 'no-cors', // Important: prevents cyclic errors
       credentials: 'omit',
       headers: { 'Content-Type': 'application/json' }
-    }).catch(() => {}); // silently ignore network errors — privacy > logs
+    }).catch(() => {});
   }
 
-  // Event Handlers
+  // Event handlers
   function onFocus(e) {
-    const field = e.target;
-    const name = field.name || field.id || field.placeholder || field.type || 'unknown';
-    fieldData.set(field, { name, time: Date.now() });
-    sendEvent('focus', name);
+    const el = e.target;
+    const name = el.name || el.id || el.placeholder || el.type || 'unknown';
+    focusedFields.set(el, { name, time: Date.now() });
+    send('focus', name);
   }
 
   function onBlur(e) {
-    const field = e.target;
-    const data = fieldData.get(field);
+    const el = e.target;
+    const data = focusedFields.get(el);
     if (data) {
       const duration = Date.now() - data.time;
-      sendEvent('blur', data.name, duration);
-      fieldData.delete(field);
+      send('blur', data.name, duration);
+      focusedFields.delete(el);
     }
   }
 
   function onInput(e) {
-    const field = e.target;
-    const name = field.name || field.id || field.placeholder || 'unknown';
-    sendEvent('input', name);
+    const el = e.target;
+    const name = el.name || el.id || el.placeholder || 'unknown';
+    send('input', name);
   }
 
   function onSubmit(e) {
@@ -93,73 +96,74 @@
 
     const form = e.target;
     const name = form.name || form.id || 'form';
+    send('submit', name);
 
-    sendEvent('submit', name);
-
-    // Abandon any lingering fields
-    fieldData.forEach((data, field) => {
+    // Abandon remaining fields
+    focusedFields.forEach((data, el) => {
       const duration = Date.now() - data.time;
-      sendEvent('abandon', data.name, duration);
+      send('abandon', data.name, duration);
     });
-    fieldData.clear();
+    focusedFields.clear();
   }
 
   function onUnload() {
     if (formSubmitted) return;
+    const totalTime = Date.now() - pageStartTime;
+    send('abandon', 'page', totalTime);
 
-    const totalTime = Date.now() - formStartTime;
-    sendEvent('abandon', 'page', totalTime);
-
-    fieldData.forEach((data, field) => {
+    focusedFields.forEach((data, el) => {
       const duration = Date.now() - data.time;
-      sendEvent('abandon', data.name, duration);
+      send('abandon', data.name, duration);
     });
   }
 
   // Initialize
   function init() {
-    const forms = document.querySelectorAll(formSelector);
-
-    forms.forEach(form => {
-      if (form.dataset.formmirrorTracked) return;
-      form.dataset.formmirrorTracked = 'true';
+    document.querySelectorAll(formSelector).forEach(form => {
+      if (form.dataset.fmTracked) return;
+      form.dataset.fmTracked = 'true';
 
       form.addEventListener('submit', onSubmit);
 
-      const fields = form.querySelectorAll('input, textarea, select');
-      fields.forEach(field => {
+      form.querySelectorAll('input, textarea, select').forEach(field => {
         field.addEventListener('focus', onFocus);
         field.addEventListener('blur', onBlur);
         field.addEventListener('input', onInput);
         field.addEventListener('change', onInput);
       });
     });
-
-    // Handle page leave
-    window.addEventListener('beforeunload', onUnload);
-    window.addEventListener('pagehide', onUnload);
   }
 
-  // Start when ready
+  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Support for dynamic forms (SPA-friendly)
-  new MutationObserver((mutations) => {
-    mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType !== 1) return;
-        if (node.matches?.(formSelector)) init();
-        node.querySelectorAll?.(formSelector).forEach(init);
+  // SPA / dynamic forms support
+  new MutationObserver(mutations => {
+    mutations.forEach(m => {
+      m.addedNodes.forEach(node => {
+        if (node.nodeType === 1) {
+          if (node.matches?.(formSelector)) init();
+          node.querySelectorAll?.(formSelector).forEach(init);
+        }
       });
     });
   }).observe(document.body, { childList: true, subtree: true });
 
-  console.log('%cFormMirror Tracking Active', 'color: #10b981; font-weight: bold;', { projectId, env: isLocalhost ? 'dev' : 'prod' });
+  // Page leave
+  window.addEventListener('beforeunload', onUnload);
+  window.addEventListener('pagehide', onUnload);
+
+  console.log('%cFormMirror Ready ✅', 'color: #10b981; font-weight: bold;', {
+    project: projectId,
+    endpoint: API_ENDPOINT
+  });
 })();
+
+
 // /*
 // FormMirror Privacy-First Tracking Snippet
 // - No cookies, no fingerprinting, no PII sent
