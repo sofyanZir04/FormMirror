@@ -4,15 +4,8 @@
 import { useState, useEffect } from 'react'
 import { Copy, Check, X, Sparkles, Globe, Code2 } from 'lucide-react'
 // THESE ARE THE ONLY IMPORTS THAT HAVE TYPES
-import SyntaxHighlighter from 'react-syntax-highlighter/dist/esm/prism-light'
-import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx'
-import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-
-// Register languages (required for prism-light)
-SyntaxHighlighter.registerLanguage('tsx', tsx)
-SyntaxHighlighter.registerLanguage('html', markup)
-SyntaxHighlighter.registerLanguage('javascript', tsx) // fallback
 
 interface TrackingCodeModalProps {
   projectId: string
