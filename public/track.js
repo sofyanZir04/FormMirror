@@ -14,7 +14,9 @@
   const formSelector = script.dataset.formSelector || 'form';
 
   // PRODUCTION ENDPOINT — always points to your live site
-  const API_ENDPOINT = 'https://formmirror.vercel.app/api/track';
+  // In public/track.js — change only this line
+  const API_ENDPOINT = 'https://formmirror.vercel.app/t';  // ← no /api/
+  // const API_ENDPOINT = 'https://formmirror.vercel.app/api/track';
 
   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const focusedFields = new Map();

@@ -43,14 +43,21 @@ const nextConfig: NextConfig = {
 
       // 3. THE MAGIC: Dedicated CORS headers for /api/track (bypasses Vercel's default block)
       {
-        source: '/api/track',
+        source: '/t',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-          { key: 'Access-Control-Max-Age', value: '86400' },
         ],
       },
+      // {
+      //   source: '/api/track',
+      //   headers: [
+      //     { key: 'Access-Control-Allow-Origin', value: '*' },
+      //     { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+      //     { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+      //     { key: 'Access-Control-Max-Age', value: '86400' },
+      //   ],
+      // },
     ];
   },
 
