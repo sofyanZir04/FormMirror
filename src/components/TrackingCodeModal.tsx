@@ -14,7 +14,7 @@ interface TrackingCodeModalProps {
   onClose: () => void
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://formmirror.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://formmirror.vercel.app';
 
 const FRAMEWORKS = [
   { id: 'html', name: 'HTML', popular: true },

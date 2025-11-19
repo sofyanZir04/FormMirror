@@ -1,166 +1,126 @@
-/*
-  FormMirror Tracking Script v2.1 — FINAL FIXED VERSION
-  Works perfectly on localhost AND https://formmirror.vercel.app
-*/
-
-(function () {
+/* FormMirror Tracking Script — Production v4.0 */
+(() => {
   'use strict';
 
   const script = document.currentScript;
   if (!script) return;
 
-  const projectId = script.getAttribute('data-project-id') || script.getAttribute('data-pid');
+  const projectId = script.dataset.projectId || script.dataset.pid;
   if (!projectId) {
     console.error('FormMirror: Missing data-project-id');
     return;
   }
 
-  const formSelector = script.getAttribute('data-form-selector') || 'form';
+  const formSelector = script.dataset.formSelector || 'form';
 
-  // AUTO DETECT CORRECT API ENDPOINT — THIS FIXES LOCALHOST 404
-  const API_BASE = 'https://formmirror.vercel.app';
-  // typeof window !== 'undefined' && window.location.hostname === 'localhost'
-  //   ? 'http://localhost:3000'
-  //   : 'https://formmirror.vercel.app';
+  // PRODUCTION ENDPOINT — always points to your live site
+  const API_ENDPOINT = 'https://formmirror.vercel.app/api/track';
 
-  const API_ENDPOINT = `${API_BASE}/api/track`;
-
-  // Anonymous session (privacy-safe)
-  const sessionId = 'sess_' + Date.now() + '_' + Math.floor(Math.random() * 1e9);
-
+  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const focusedFields = new Map();
-  let formSubmitted = false;
-  const pageStartTime = Date.now();
+  let submitted = false;
+  const pageStart = Date.now();
 
-  // SAFE payload — NO DOM elements, NO cycles
-  function createPayload(type, fieldName = null, duration = null) {
-    return {
-      project_id: projectId,
-      session_id: sessionId,
-      event_type: type,
-      field_name: fieldName,
-      duration,
-      timestamp: new Date().toISOString(),
-      url: location.origin + location.pathname, // safe string only
-      referrer: document.referrer || null,
-      user_agent: navigator.userAgent
-    };
-  }
+  // 100% safe payload — no DOM references, no cycles
+  const payload = (type, field = null, duration = null) => ({
+    project_id: projectId,
+    session_id: sessionId,
+    event_type: type,
+    field_name: field || null,
+    duration: duration || null,
+    timestamp: new Date().toISOString(),
+    path: location.pathname + location.search,
+    referrer: document.referrer || null,
+    ua: navigator.userAgent.slice(0, 200)
+  });
 
-  // Send with maximum reliability
-  function send(type, fieldName, duration) {
-    const payload = createPayload(type, fieldName, duration);
-    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const send = (type, field, duration) => {
+    const data = payload(type, field, duration);
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-    // Best: sendBeacon (works on unload)
+    // sendBeacon = best delivery guarantee
     if (navigator.sendBeacon?.(API_ENDPOINT, blob)) return;
 
-    // Fallback: fetch + keepalive
+    // fetch + keepalive fallback
     fetch(API_ENDPOINT, {
       method: 'POST',
       body: blob,
-      keepalive: true,
-      mode: 'no-cors', // Important: prevents cyclic errors
+      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
       credentials: 'omit',
-      headers: { 'Content-Type': 'application/json' }
+      keepalive: true
     }).catch(() => {});
-  }
+  };
 
-  // Event handlers
-  function onFocus(e) {
+  const onFocus = e => {
     const el = e.target;
     const name = el.name || el.id || el.placeholder || el.type || 'unknown';
     focusedFields.set(el, { name, time: Date.now() });
     send('focus', name);
-  }
+  };
 
-  function onBlur(e) {
-    const el = e.target;
-    const data = focusedFields.get(el);
-    if (data) {
-      const duration = Date.now() - data.time;
-      send('blur', data.name, duration);
-      focusedFields.delete(el);
+  const onBlur = e => {
+    const info = focusedFields.get(e.target);
+    if (info) {
+      send('blur', info.name, Date.now() - info.time);
+      focusedFields.delete(e.target);
     }
-  }
+  };
 
-  function onInput(e) {
-    const el = e.target;
-    const name = el.name || el.id || el.placeholder || 'unknown';
+  const onInput = e => {
+    const name = e.target.name || e.target.id || e.target.placeholder || 'unknown';
     send('input', name);
-  }
+  };
 
-  function onSubmit(e) {
-    if (formSubmitted) return;
-    formSubmitted = true;
-
-    const form = e.target;
-    const name = form.name || form.id || 'form';
+  const onSubmit = e => {
+    if (submitted) return;
+    submitted = true;
+    const name = e.target.name || e.target.id || 'form';
     send('submit', name);
-
-    // Abandon remaining fields
-    focusedFields.forEach((data, el) => {
-      const duration = Date.now() - data.time;
-      send('abandon', data.name, duration);
-    });
+    focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
     focusedFields.clear();
-  }
+  };
 
-  function onUnload() {
-    if (formSubmitted) return;
-    const totalTime = Date.now() - pageStartTime;
-    send('abandon', 'page', totalTime);
+  const onUnload = () => {
+    if (submitted) return;
+    send('abandon', 'page', Date.now() - pageStart);
+    focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
+  };
 
-    focusedFields.forEach((data, el) => {
-      const duration = Date.now() - data.time;
-      send('abandon', data.name, duration);
-    });
-  }
-
-  // Initialize
-  function init() {
+  const init = () => {
     document.querySelectorAll(formSelector).forEach(form => {
-      if (form.dataset.fmTracked) return;
-      form.dataset.fmTracked = 'true';
+      if (form.dataset.fm) return;
+      form.dataset.fm = '1';
 
       form.addEventListener('submit', onSubmit);
-
-      form.querySelectorAll('input, textarea, select').forEach(field => {
-        field.addEventListener('focus', onFocus);
-        field.addEventListener('blur', onBlur);
-        field.addEventListener('input', onInput);
-        field.addEventListener('change', onInput);
+      form.querySelectorAll('input, textarea, select').forEach(f => {
+        f.addEventListener('focus', onFocus);
+        f.addEventListener('blur', onBlur);
+        f.addEventListener('input', onInput);
+        f.addEventListener('change', onInput);
       });
     });
-  }
+  };
 
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // SPA / dynamic forms support
-  new MutationObserver(mutations => {
-    mutations.forEach(m => {
-      m.addedNodes.forEach(node => {
-        if (node.nodeType === 1) {
-          if (node.matches?.(formSelector)) init();
-          node.querySelectorAll?.(formSelector).forEach(init);
-        }
-      });
-    });
+  new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType === 1) {
+        if (node.matches?.(formSelector)) init();
+        node.querySelectorAll?.(formSelector).forEach(init);
+      }
+    }));
   }).observe(document.body, { childList: true, subtree: true });
 
-  // Page leave
   window.addEventListener('beforeunload', onUnload);
   window.addEventListener('pagehide', onUnload);
 
-  console.log('%cFormMirror Ready ✅', 'color: #10b981; font-weight: bold;', {
-    project: projectId,
-    endpoint: API_ENDPOINT
-  });
+  console.log('%cFormMirror Production Ready ✅', 'color:#10b981;font-weight:bold', projectId);
 })();
 
 
