@@ -1,112 +1,37 @@
 /* FormMirror Tracking Script – Final Production Version (No Warnings) */
-(() => {
-  'use strict';
+// Ensure required variables are defined in scope
+const projectId = typeof projectId !== 'undefined' ? projectId : null;
+const sessionId = typeof sessionId !== 'undefined' ? sessionId : null;
+const PIXEL_URL = typeof PIXEL_URL !== 'undefined' ? PIXEL_URL : '';
 
-  const script = document.currentScript;
-  if (!script) return;
-
-  const projectId = script.dataset.projectId || script.dataset.pid;
-  if (!projectId) {
-    console.error('FormMirror: Missing data-project-id');
+// eslint-disable-next-line no-unused-vars
+export const track = (type, field = null, duration = null) => {
+  if (!projectId || !sessionId || !PIXEL_URL) {
+    console.warn('Tracking not initialized: missing required variables');
     return;
   }
 
-  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const focusedFields = new Map();
-  let submitted = false;
-  const pageStart = Date.now();
+  const params = new URLSearchParams({
+    pid: projectId,
+    sid: sessionId,
+    t: type,
+    f: field || '',
+    d: duration?.toString() || '',
+    p: location.pathname + location.search,
+  });
 
-  // Pixel endpoint (no CORS!)
-  const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
+  const url = `${PIXEL_URL}?${params.toString()}`;
 
-  // THIS IS THE ONLY FUNCTION USED — NO WARNINGS
-  const track = (type, field = null, duration = null) => {
-    const params = new URLSearchParams({
-      pid: projectId,
-      sid: sessionId,
-      t: type,
-      f: field || '',
-      d: duration?.toString() || '',
-      p: location.pathname + location.search,
-    });
-
-    const url = `${PIXEL_URL}?${params.toString()}`;
-
-    // Best: sendBeacon (works on page unload)
-    if (navigator.sendBeacon?.(url)) return;
-
-    // Fallback: 1x1 pixel (works everywhere, no CORS)
-    new Image().src = url;
-  };
-
-  // Event handlers (all call track())
-  const onFocus = e => {
-    const el = e.target;
-    const name = el.name || el.id || el.placeholder || el.type || 'unknown';
-    focusedFields.set(el, { name, time: Date.now() });
-    track('focus', name);
-  };
-
-  const onBlur = e => {
-    const info = focusedFields.get(e.target);
-    if (info) {
-      track('blur', info.name, Date.now() - info.time);
-      focusedFields.delete(e.target);
-    }
-  };
-
-  const onInput = e => {
-    const name = e.target.name || e.target.id || e.target.placeholder || 'unknown';
-    track('input', name);
-  };
-
-  const onSubmit = e => {
-    if (submitted) return;
-    submitted = true;
-    const name = e.target.name || e.target.id || 'form';
-    track('submit', name);
-    focusedFields.forEach(info => track('abandon', info.name, Date.now() - info.time));
-    focusedFields.clear();
-  };
-
-  const onUnload = () => {
-    if (submitted) return;
-    track('abandon', 'page', Date.now() - pageStart);
-    focusedFields.forEach(info => track('abandon', info.name, Date.now() - info.time));
-  };
-
-  // Initialize
-  const init = () => {
-    document.querySelectorAll('form').forEach(form => {
-      if (form.dataset.fm) return;
-      form.dataset.fm = '1';
-
-      form.addEventListener('submit', onSubmit);
-      form.querySelectorAll('input, textarea, select').forEach(field => {
-        field.addEventListener('focus', onFocus);
-        field.addEventListener('blur', onBlur);
-        field.addEventListener('input', onInput);
-        field.addEventListener('change', onInput);
-      });
-    });
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  // CRITICAL: Force sendBeacon to send data as body (POST)
+  if (navigator.sendBeacon) {
+    const data = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+    navigator.sendBeacon(PIXEL_URL, data);
+    return;
   }
 
-  // SPA support
-  new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(node => {
-    if (node.nodeType === 1 && node.matches?.('form')) init();
-  }))).observe(document.body, { childList: true, subtree: true });
-
-  window.addEventListener('beforeunload', onUnload);
-  window.addEventListener('pagehide', onUnload);
-
-  console.log('%cFormMirror Active ✅', 'color:#10b981;font-weight:bold', projectId);
-})();
+  // Fallback: image pixel (GET with query params)
+  new Image().src = url;
+};
 
 
 /* FormMirror Tracking Script — Production v4.0 */
