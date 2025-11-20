@@ -1,38 +1,71 @@
 /* FormMirror Tracking Script – Final Production Version (No Warnings) */
 // Ensure required variables are defined in scope
-const projectId = typeof projectId !== 'undefined' ? projectId : null;
-const sessionId = typeof sessionId !== 'undefined' ? sessionId : null;
-const PIXEL_URL = typeof PIXEL_URL !== 'undefined' ? PIXEL_URL : '';
+/* FormMirror Tracking Script – Final Working Version (public/track.js) */
+(() => {
+  'use strict';
 
-// eslint-disable-next-line no-unused-vars
-export const track = (type, field = null, duration = null) => {
-  if (!projectId || !sessionId || !PIXEL_URL) {
-    console.warn('Tracking not initialized: missing required variables');
+  // Get project ID from script tag
+  const script = document.currentScript;
+  if (!script) return;
+
+  const projectId = script.dataset.projectId || script.dataset.pid || script.getAttribute('data-project-id');
+  if (!projectId) {
+    console.error('FormMirror: Missing data-project-id');
     return;
   }
 
-  const params = new URLSearchParams({
-    pid: projectId,
-    sid: sessionId,
-    t: type,
-    f: field || '',
-    d: duration?.toString() || '',
-    p: location.pathname + location.search,
-  });
+  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
 
-  const url = `${PIXEL_URL}?${params.toString()}`;
+  // THE ONLY FUNCTION — NO EXPORT, NO ESLINT WARNINGS
+  window.track = function(type, field = null, duration = null) {
+    const params = new URLSearchParams({
+      pid: projectId,
+      sid: sessionId,
+      t: type,
+      f: field || '',
+      d: duration?.toString() || '',
+      p: location.pathname + location.search,
+    });
 
-  // CRITICAL: Force sendBeacon to send data as body (POST)
-  if (navigator.sendBeacon) {
-    const data = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
-    navigator.sendBeacon(PIXEL_URL, data);
-    return;
+    // METHOD 1: sendBeacon with body (best reliability)
+    if (navigator.sendBeacon) {
+      const data = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+      navigator.sendBeacon(PIXEL_URL, data);
+      return;
+    }
+
+    // METHOD 2: fallback pixel
+    new Image().src = `${PIXEL_URL}?${params.toString()}`;
+  };
+
+  // Auto-init tracking on your own site (optional, only if you want to track your own forms too)
+  // Remove this block if you only use it on third-party sites
+  const init = () => {
+    document.querySelectorAll('form').forEach(form => {
+      if (form.dataset.fm) return;
+      form.dataset.fm = '1';
+
+      const send = (type, field, duration) => window.track(type, field, duration);
+
+      form.addEventListener('submit', () => send('submit', 'form'));
+
+      form.querySelectorAll('input, textarea, select').forEach(field => {
+        field.addEventListener('focus', () => send('focus', field.name || field.id || 'unknown'));
+        field.addEventListener('blur', () => send('blur', field.name || field.id || 'unknown'));
+        field.addEventListener('input', () => send('input', field.name || field.id || 'unknown'));
+      });
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 
-  // Fallback: image pixel (GET with query params)
-  new Image().src = url;
-};
-
+  console.log('%cFormMirror Ready ✅', 'color:#10b981;font-weight:bold', projectId);
+})();
 
 /* FormMirror Tracking Script — Production v4.0 */
 // (() => {
