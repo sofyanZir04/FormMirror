@@ -1,76 +1,100 @@
+/* FormMirror – Final Production Tracking Script */
 (() => {
   'use strict';
 
-  const s = document.currentScript;
-  if (!s) return;
+  const script = document.currentScript;
+  if (!script) return;
 
-  const pid = s.dataset.projectId || s.getAttribute('data-project-id');
-  if (!pid) return;
+  const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
+  if (!projectId) return;
 
-  const sid = 's' + Date.now() + Math.random().toString(36).slice(2, 9);
-  const url = 'https://formmirror.vercel.app/c';
+  const sessionId = 's' + Date.now() + Math.random().toString(36).slice(2);
+  const PIXEL = 'https://formmirror.vercel.app/c';
 
-  // Keep image references to prevent garbage-collection aborts
-  const imgs = new Set();
-
-  // Throttle helper
-  const throttle = (fn, delay) => {
-    let last = 0;
-    return (...args) => {
-      const now = Date.now();
-      if (now - last >= delay) {
-        last = now;
-        fn(...args);
-      }
-    };
-  };
-
-  // Main send function (Beacon preferred)
-  const send = (e, n = '', d = '') => {
-    const body = new URLSearchParams({
-      i: pid,
-      s: sid,
-      e,
-      n,
-      d,
-      _: Date.now(), // cache buster
-    }).toString();
-
-    // Use Beacon when possible
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(url, body);
-      return;
-    }
-
-    // Fallback to image beacon
-    const img = new Image();
-    imgs.add(img);
-    img.onload = img.onerror = () => imgs.delete(img);
-    img.src = url + '?' + body;
-  };
-
-  // Throttled input events
-  const sendInput = throttle((name) => send('input', name), 300);
-
-  // Attach to all forms once
-  document.querySelectorAll('form').forEach(f => {
-    if (f.dataset.t) return;
-    f.dataset.t = '1';
-
-    f.addEventListener('submit', () => send('submit'));
-
-    f.querySelectorAll('input, textarea, select').forEach(i => {
-      const name = i.name || i.id || 'field';
-
-      i.addEventListener('focus', () => send('focus', name));
-      i.addEventListener('blur', () => send('blur', name));
-      i.addEventListener('input', () => sendInput(name));
+  const track = (e, n = '', d = '') => {
+    const p = new URLSearchParams({
+      i: projectId,
+      s: sessionId,
+      e: e,
+      n: n,
+      d: d,
+      _: Date.now() // cache buster – مهم جدًا
     });
-  });
+    new Image().src = PIXEL + '?' + p;
+  };
 
-  console.log('%cFormMirror Active ✓', 'color:#10b981;font-weight:bold');
+  // تتبع جميع النماذج تلقائيًا
+  const init = () => {
+    document.querySelectorAll('form').forEach(form => {
+      if (form.dataset.fm) return;
+      form.dataset.fm = '1';
+
+      form.addEventListener('submit', () => track('submit'));
+
+      form.querySelectorAll('input, textarea, select').forEach(field => {
+        const name = field.name || field.id || field.placeholder || 'field';
+
+        field.addEventListener('focus', () => track('focus', name));
+        field.addEventListener('blur', () => track('blur', name));
+        field.addEventListener('input', () => track('input', name));
+      });
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // دعم SPAs (نماذج تتحمل ديناميكيًا)
+  new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType === 1 && node.matches?.('form')) init();
+    }));
+  }).observe(document.body, { childList: true, subtree: true });
+
+  console.log('%c✓ FormMirror Active', 'color:#10b981;font-weight:bold');
 })();
 
+
+// (() => {
+//   'use strict';
+//   const s = document.currentScript;
+//   if (!s) return;
+//   const pid = s.dataset.projectId || s.getAttribute('data-project-id');
+//   if (!pid) return;
+
+//   const sid = 's' + Date.now() + Math.random().toString(36).slice(2, 9);
+//   const url = 'https://formmirror.vercel.app/c';
+
+//   const send = (e, n = '', d = '') => {
+//     const p = new URLSearchParams({
+//       i: pid,
+//       s: sid,
+//       e: e,
+//       n: n,
+//       d: d,
+//       _: Date.now() // cache buster
+//     });
+//     new Image().src = url + '?' + p;
+//   };
+
+//   // F _ T
+//   document.querySelectorAll('form').forEach(f => {
+//     if (f.dataset.t) return;
+//     f.dataset.t = '1';
+//     f.addEventListener('submit', () => send('submit'));
+//     f.querySelectorAll('input, textarea, select').forEach(i => {
+//       const name = i.name || i.id || 'field';
+//       i.addEventListener('focus', () => send('focus', name));
+//       i.addEventListener('blur', () => send('blur', name));
+//       i.addEventListener('input', () => send('input', name));
+//     });
+//   });
+
+//   console.log('%cFormMirror Active', 'color:#10b981;font-weight:bold');
+// })();
 // (() => {
 //   'use strict';
 
