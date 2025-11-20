@@ -1,59 +1,56 @@
-/* FormMirror Tracking Script – Final Production Version (No Warnings) */
-// Ensure required variables are defined in scope
-/* FormMirror Tracking Script – Final Working Version (public/track.js) */
 (() => {
   'use strict';
 
-  // Get project ID from script tag
   const script = document.currentScript;
   if (!script) return;
 
-  const projectId = script.dataset.projectId || script.dataset.pid || script.getAttribute('data-project-id');
+  const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
   if (!projectId) {
     console.error('FormMirror: Missing data-project-id');
     return;
   }
 
-  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
   const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
 
-  // THE ONLY FUNCTION — NO EXPORT, NO ESLINT WARNINGS
-  window.track = function(type, field = null, duration = null) {
+  // ONE SINGLE FUNCTION THAT WORKS EVERYWHERE
+  const track = (type, field = '', duration = '') => {
     const params = new URLSearchParams({
       pid: projectId,
       sid: sessionId,
       t: type,
-      f: field || '',
-      d: duration?.toString() || '',
-      p: location.pathname + location.search,
+      f: field,
+      d: duration,
+      p: location.pathname + location.search
     });
 
-    // METHOD 1: sendBeacon with body (best reliability)
+    // Force sendBeacon to POST with body
     if (navigator.sendBeacon) {
-      const data = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
-      navigator.sendBeacon(PIXEL_URL, data);
+      const blob = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+      navigator.sendBeacon(PIXEL_URL, blob);
       return;
     }
 
-    // METHOD 2: fallback pixel
-    new Image().src = `${PIXEL_URL}?${params.toString()}`;
+    // Fallback pixel
+    new Image().src = PIXEL_URL + '?' + params.toString();
   };
 
-  // Auto-init tracking on your own site (optional, only if you want to track your own forms too)
-  // Remove this block if you only use it on third-party sites
+  // Make it global so any code can call it (optional)
+  window.fm = track;
+
+  // Auto-track forms
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
-      const send = (type, field, duration) => window.track(type, field, duration);
+      form.addEventListener('submit', () => track('submit', 'form'));
 
-      form.addEventListener('submit', () => send('submit', 'form'));
-
-      form.querySelectorAll('input, textarea, select').forEach(field => {
-        field.addEventListener('focus', () => send('focus', field.name || field.id || 'unknown'));
-        field.addEventListener('blur', () => send('blur', field.name || field.id || 'unknown'));
-        field.addEventListener('input', () => send('input', field.name || field.id || 'unknown'));
+      form.querySelectorAll('input, textarea, select').forEach(el => {
+        const name = el.name || el.id || el.placeholder || 'field';
+        el.addEventListener('focus', () => track('focus', name));
+        el.addEventListener('blur', () => track('blur', name));
+        el.addEventListener('input', () => track('input', name));
       });
     });
   };
@@ -64,7 +61,7 @@
     init();
   }
 
-  console.log('%cFormMirror Ready ✅', 'color:#10b981;font-weight:bold', projectId);
+  console.log('%cFormMirror Ready – Tracking Active ✅', 'color:#10b981;font-weight:bold', projectId);
 })();
 
 /* FormMirror Tracking Script — Production v4.0 */
