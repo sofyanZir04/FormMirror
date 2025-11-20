@@ -27,7 +27,7 @@ const FRAMEWORKS = [
 ] as const
 
 const generateCode = (framework: string, projectId: string, projectName: string) => {
-  const scriptUrl = `${SITE_URL}/s.js`
+  const scriptUrl = `${SITE_URL}/a1.js`
   const comment = `FormMirror: Track "${projectName}" (ID: ${projectId})`
 
   const inlineScript = `(function(){

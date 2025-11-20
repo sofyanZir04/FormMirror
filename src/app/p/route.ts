@@ -1,5 +1,4 @@
-// app/pixel.gif/route.ts
-// app/pixel.gif/route.ts
+// app/p/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
@@ -36,16 +35,7 @@ async function handlePixel(request: NextRequest) {
       }
     }
 
-    const { pid, sid, t, f, d, p } = data
-
-    console.log('[Pixel] Event received:', {
-      project_id: pid,
-      session_id: sid,
-      event_type: t,
-      field_name: f,
-      duration: d,
-      path: p,
-    })
+    const { pid, sid, t, f, d} = data
 
     if (pid && sid && t) {
       const supabase = createServerSupabaseClient()
@@ -56,11 +46,7 @@ async function handlePixel(request: NextRequest) {
         event_type: t,
         field_name: f || null,
         duration: d && d !== '' ? Number(d) : null,
-        // path: p || null,
-        // THIS IS THE FIX: Use the correct column name
         timestamp: new Date().toISOString(), // ← your table expects "timestamp"
-        // OR if your column is "created_at":
-        // created_at: new Date().toISOString(),
       })
 
       if (error) {
@@ -74,7 +60,7 @@ async function handlePixel(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'image/gif',
-        'Cache-Control': 'no-store',
+        'Cache-Control': 'no-store, no-cache, private',
         'Access-Control-Allow-Origin': '*',
       },
     })

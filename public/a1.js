@@ -1,69 +1,106 @@
 (() => {
   'use strict';
+  const s = document.currentScript;
+  if (!s) return;
+  const pid = s.dataset.projectId || s.getAttribute('data-project-id');
+  if (!pid) return;
 
-  const script = document.currentScript;
-  if (!script) return;
+  const sid = 's' + Date.now() + Math.random().toString(36).slice(2, 9);
+  const url = 'https://formmirror.vercel.app/c';
 
-  const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
-  if (!projectId) {
-    console.error('FormMirror: Missing data-project-id');
-    return;
-  }
-
-  const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  // const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
-  const PIXEL_URL = 'https://formmirror.vercel.app/p';  // just /p
-
-  // ONE SINGLE FUNCTION THAT WORKS EVERYWHERE
-  const track = (type, field = '', duration = '') => {
-    const params = new URLSearchParams({
-      pid: projectId,
-      sid: sessionId,
-      t: type,
-      f: field,
-      d: duration,
-      p: location.pathname + location.search
+  const send = (e, n = '', d = '') => {
+    const p = new URLSearchParams({
+      i: pid,
+      s: sid,
+      e: e,
+      n: n,
+      d: d,
+      _: Date.now() // cache buster
     });
-
-    // Force sendBeacon to POST with body
-    if (navigator.sendBeacon) {
-      const blob = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
-      navigator.sendBeacon(PIXEL_URL, blob);
-      return;
-    }
-
-    // Fallback pixel
-    new Image().src = PIXEL_URL + '?' + params.toString();
+    new Image().src = url + '?' + p;
   };
 
-  // Make it global so any code can call it (optional)
-  window.fm = track;
-
-  // Auto-track forms
-  const init = () => {
-    document.querySelectorAll('form').forEach(form => {
-      if (form.dataset.fm) return;
-      form.dataset.fm = '1';
-
-      form.addEventListener('submit', () => track('submit', 'form'));
-
-      form.querySelectorAll('input, textarea, select').forEach(el => {
-        const name = el.name || el.id || el.placeholder || 'field';
-        el.addEventListener('focus', () => track('focus', name));
-        el.addEventListener('blur', () => track('blur', name));
-        el.addEventListener('input', () => track('input', name));
-      });
+  // F _ T
+  document.querySelectorAll('form').forEach(f => {
+    if (f.dataset.t) return;
+    f.dataset.t = '1';
+    f.addEventListener('submit', () => send('submit'));
+    f.querySelectorAll('input, textarea, select').forEach(i => {
+      const name = i.name || i.id || 'field';
+      i.addEventListener('focus', () => send('focus', name));
+      i.addEventListener('blur', () => send('blur', name));
+      i.addEventListener('input', () => send('input', name));
     });
-  };
+  });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-  console.log('%cFormMirror Ready – Tracking Active ✅', 'color:#10b981;font-weight:bold', projectId);
+  console.log('%cFormMirror Active', 'color:#10b981;font-weight:bold');
 })();
+// (() => {
+//   'use strict';
+
+//   const script = document.currentScript;
+//   if (!script) return;
+
+//   const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
+//   if (!projectId) {
+//     console.error('FormMirror: Missing data-project-id');
+//     return;
+//   }
+
+//   const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+//   // const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
+//   const PIXEL_URL = 'https://formmirror.vercel.app/p';  // just /p
+
+//   // ONE SINGLE FUNCTION THAT WORKS EVERYWHERE
+//   const track = (type, field = '', duration = '') => {
+//     const params = new URLSearchParams({
+//       pid: projectId,
+//       sid: sessionId,
+//       t: type,
+//       f: field,
+//       d: duration,
+//       p: location.pathname + location.search
+//     });
+
+//     // Force sendBeacon to POST with body
+//     if (navigator.sendBeacon) {
+//       const blob = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+//       navigator.sendBeacon(PIXEL_URL, blob);
+//       return;
+//     }
+
+//     // Fallback pixel
+//     new Image().src = PIXEL_URL + '?' + params.toString();
+//   };
+
+//   // Make it global so any code can call it (optional)
+//   window.fm = track;
+
+//   // Auto-track forms
+//   const init = () => {
+//     document.querySelectorAll('form').forEach(form => {
+//       if (form.dataset.fm) return;
+//       form.dataset.fm = '1';
+
+//       form.addEventListener('submit', () => track('submit', 'form'));
+
+//       form.querySelectorAll('input, textarea, select').forEach(el => {
+//         const name = el.name || el.id || el.placeholder || 'field';
+//         el.addEventListener('focus', () => track('focus', name));
+//         el.addEventListener('blur', () => track('blur', name));
+//         el.addEventListener('input', () => track('input', name));
+//       });
+//     });
+//   };
+
+//   if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', init);
+//   } else {
+//     init();
+//   }
+
+//   console.log('%cFormMirror Ready – Tracking Active ✅', 'color:#10b981;font-weight:bold', projectId);
+// })();
 
 /* FormMirror Tracking Script — Production v4.0 */
 // (() => {
