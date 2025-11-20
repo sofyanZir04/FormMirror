@@ -24,8 +24,7 @@ export async function GET(req: NextRequest) {
         field_name: n || null,
         duration: d ? Number(d) : null,
         timestamp: new Date().toISOString(),
-      })
-      .catch(() => {}) // لا نخلي أي خطأ يوقف الـ GIF
+      })      
   }
 
   // 1×1 شفاف
