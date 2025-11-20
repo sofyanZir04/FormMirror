@@ -1,40 +1,76 @@
 (() => {
   'use strict';
+
   const s = document.currentScript;
   if (!s) return;
+
   const pid = s.dataset.projectId || s.getAttribute('data-project-id');
   if (!pid) return;
 
   const sid = 's' + Date.now() + Math.random().toString(36).slice(2, 9);
   const url = 'https://formmirror.vercel.app/c';
 
-  const send = (e, n = '', d = '') => {
-    const p = new URLSearchParams({
-      i: pid,
-      s: sid,
-      e: e,
-      n: n,
-      d: d,
-      _: Date.now() // cache buster
-    });
-    new Image().src = url + '?' + p;
+  // Keep image references to prevent garbage-collection aborts
+  const imgs = new Set();
+
+  // Throttle helper
+  const throttle = (fn, delay) => {
+    let last = 0;
+    return (...args) => {
+      const now = Date.now();
+      if (now - last >= delay) {
+        last = now;
+        fn(...args);
+      }
+    };
   };
 
-  // F _ T
+  // Main send function (Beacon preferred)
+  const send = (e, n = '', d = '') => {
+    const body = new URLSearchParams({
+      i: pid,
+      s: sid,
+      e,
+      n,
+      d,
+      _: Date.now(), // cache buster
+    }).toString();
+
+    // Use Beacon when possible
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url, body);
+      return;
+    }
+
+    // Fallback to image beacon
+    const img = new Image();
+    imgs.add(img);
+    img.onload = img.onerror = () => imgs.delete(img);
+    img.src = url + '?' + body;
+  };
+
+  // Throttled input events
+  const sendInput = throttle((name) => send('input', name), 300);
+
+  // Attach to all forms once
   document.querySelectorAll('form').forEach(f => {
     if (f.dataset.t) return;
     f.dataset.t = '1';
+
     f.addEventListener('submit', () => send('submit'));
+
     f.querySelectorAll('input, textarea, select').forEach(i => {
       const name = i.name || i.id || 'field';
+
       i.addEventListener('focus', () => send('focus', name));
       i.addEventListener('blur', () => send('blur', name));
-      i.addEventListener('input', () => send('input', name));
+      i.addEventListener('input', () => sendInput(name));
     });
   });
 
-  console.log('%cFormMirror Active', 'color:#10b981;font-weight:bold');
+  console.log('%cFormMirror Active ✓', 'color:#10b981;font-weight:bold');
 })();
+
 // (() => {
 //   'use strict';
 
