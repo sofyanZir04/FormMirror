@@ -22,7 +22,7 @@ async function handlePixel(request: NextRequest) {
     let data: any = Object.fromEntries(request.nextUrl.searchParams)
 
     if (request.method === 'POST') {
-      try {
+      try {        
         const json = await request.json()
         data = { ...data, ...json }
       } catch {
@@ -31,6 +31,11 @@ async function handlePixel(request: NextRequest) {
     }
 
     const { pid, sid, t, f, d, p } = data
+    // Add this at the top of handlePixel function
+    console.log('PIXEL HIT!', {
+        pid,sid,t,f,d,
+        path: p,time: new Date().toISOString()
+    })
 
     if (pid && sid && t) {
       const supabase = createServerSupabaseClient()
