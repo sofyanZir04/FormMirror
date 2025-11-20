@@ -11,7 +11,8 @@
   }
 
   const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
+  // const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
+  const PIXEL_URL = 'https://formmirror.vercel.app/p';  // just /p
 
   // ONE SINGLE FUNCTION THAT WORKS EVERYWHERE
   const track = (type, field = '', duration = '') => {
