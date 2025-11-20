@@ -1,40 +1,61 @@
-// app/pixel.gif/route.ts   ← THIS IS THE FINAL, UNBLOCKABLE ENDPOINT
+// app/pixel.gif/route.ts   ← FINAL VERSION THAT WORKS EVERY TIME
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
-export const runtime = 'edge' // optional, but fast
+export const runtime = 'edge' // optional, fastest
 
+// Accept BOTH GET (for <img>) and POST (for sendBeacon with body)
 export async function GET(request: NextRequest) {
-  // Parse query string (sendBeacon sends data as query string for GET)
-  const url = new URL(request.url)
-  const params = url.searchParams
+  return handlePixel(request)
+}
 
-  const payload = {
-    project_id: params.get('pid'),
-    session_id: params.get('sid'),
-    event_type: params.get('t') || 'pageview',
-    field_name: params.get('f') || null,
-    duration: params.get('d') ? Number(params.get('d')) : null,
-    path: params.get('p') || '',
-  }
+export async function POST(request: NextRequest) {
+  return handlePixel(request)
+}
 
-  if (payload.project_id && payload.session_id) {
-    const supabase = createServerSupabaseClient()
-    await supabase.from('form_events').insert({
-      ...payload,
-      timestamp: new Date().toISOString(),
+// Shared logic
+async function handlePixel(request: NextRequest) {
+  try {
+    // For GET: query params
+    // For POST: try JSON body first, fallback to query params
+    let data: any = Object.fromEntries(request.nextUrl.searchParams)
+
+    if (request.method === 'POST') {
+      try {
+        const json = await request.json()
+        data = { ...data, ...json }
+      } catch {
+        // ignore invalid JSON
+      }
+    }
+
+    const { pid, sid, t, f, d, p } = data
+
+    if (pid && sid && t) {
+      const supabase = createServerSupabaseClient()
+      await supabase.from('form_events').insert({
+        project_id: pid,
+        session_id: sid,
+        event_type: t,
+        field_name: f || null,
+        duration: d ? Number(d) : null,
+        path: p || null,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    // 1x1 GIF pixel
+    const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
+
+    return new NextResponse(GIF, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/gif',
+        'Cache-Control': 'no-store',
+      },
     })
+  } catch (err) {
+    return new NextResponse(null, { status: 204 })
   }
-
-  // 1x1 transparent GIF (the magic pixel)
-  const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
-
-  return new Response(gif, {
-    headers: {
-      'Content-Type': 'image/gif',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'Expires': '0',
-    },
-  })
 }
