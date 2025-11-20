@@ -1,4 +1,4 @@
-/* FormMirror Tracking Script — Production v4.0 */
+/* FormMirror Tracking Script – Final Production Version (No Warnings) */
 (() => {
   'use strict';
 
@@ -11,95 +11,82 @@
     return;
   }
 
-  const formSelector = script.dataset.formSelector || 'form';
-
-  // PRODUCTION ENDPOINT — always points to your live site
-  // In public/track.js — change only this line  
-  const API_ENDPOINT = 'https://track.grhous014.workers.dev';
-  // const API_ENDPOINT = 'https://formmirror.vercel.app/api/track';
-
   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const focusedFields = new Map();
   let submitted = false;
   const pageStart = Date.now();
 
-  // 100% safe payload — no DOM references, no cycles
-  const payload = (type, field = null, duration = null) => ({
-    project_id: projectId,
-    session_id: sessionId,
-    event_type: type,
-    field_name: field || null,
-    duration: duration || null,
-    timestamp: new Date().toISOString(),
-    path: location.pathname + location.search,
-    referrer: document.referrer || null,
-    ua: navigator.userAgent.slice(0, 200)
-  });
+  // Pixel endpoint (no CORS!)
+  const PIXEL_URL = 'https://formmirror.vercel.app/pixel.gif';
 
-  const send = (type, field, duration) => {
-    const data = payload(type, field, duration);
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  // THIS IS THE ONLY FUNCTION USED — NO WARNINGS
+  const track = (type, field = null, duration = null) => {
+    const params = new URLSearchParams({
+      pid: projectId,
+      sid: sessionId,
+      t: type,
+      f: field || '',
+      d: duration?.toString() || '',
+      p: location.pathname + location.search,
+    });
 
-    // sendBeacon = best delivery guarantee
-    if (navigator.sendBeacon?.(API_ENDPOINT, blob)) return;
+    const url = `${PIXEL_URL}?${params.toString()}`;
 
-    // fetch + keepalive fallback
-    fetch(API_ENDPOINT, {
-      method: 'POST',
-      body: blob,
-      headers: { 'Content-Type': 'application/json' },
-      mode: 'cors',
-      credentials: 'omit',
-      keepalive: true
-    }).catch(() => {});
+    // Best: sendBeacon (works on page unload)
+    if (navigator.sendBeacon?.(url)) return;
+
+    // Fallback: 1x1 pixel (works everywhere, no CORS)
+    new Image().src = url;
   };
 
+  // Event handlers (all call track())
   const onFocus = e => {
     const el = e.target;
     const name = el.name || el.id || el.placeholder || el.type || 'unknown';
     focusedFields.set(el, { name, time: Date.now() });
-    send('focus', name);
+    track('focus', name);
   };
 
   const onBlur = e => {
     const info = focusedFields.get(e.target);
     if (info) {
-      send('blur', info.name, Date.now() - info.time);
+      track('blur', info.name, Date.now() - info.time);
       focusedFields.delete(e.target);
     }
   };
 
   const onInput = e => {
     const name = e.target.name || e.target.id || e.target.placeholder || 'unknown';
-    send('input', name);
+    track('input', name);
   };
 
   const onSubmit = e => {
     if (submitted) return;
     submitted = true;
     const name = e.target.name || e.target.id || 'form';
-    send('submit', name);
-    focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
+    track('submit', name);
+    focusedFields.forEach(info => track('abandon', info.name, Date.now() - info.time));
     focusedFields.clear();
   };
 
   const onUnload = () => {
     if (submitted) return;
-    send('abandon', 'page', Date.now() - pageStart);
-    focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
+    track('abandon', 'page', Date.now() - pageStart);
+    focusedFields.forEach(info => track('abandon', info.name, Date.now() - info.time));
   };
 
+  // Initialize
   const init = () => {
-    document.querySelectorAll(formSelector).forEach(form => {
+    document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
       form.addEventListener('submit', onSubmit);
-      form.querySelectorAll('input, textarea, select').forEach(f => {
-        f.addEventListener('focus', onFocus);
-        f.addEventListener('blur', onBlur);
-        f.addEventListener('input', onInput);
-        f.addEventListener('change', onInput);
+      form.querySelectorAll('input, textarea, select').forEach(field => {
+        field.addEventListener('focus', onFocus);
+        field.addEventListener('blur', onBlur);
+        field.addEventListener('input', onInput);
+        field.addEventListener('change', onInput);
       });
     });
   };
@@ -110,20 +97,144 @@
     init();
   }
 
-  new MutationObserver(muts => {
-    muts.forEach(m => m.addedNodes.forEach(node => {
-      if (node.nodeType === 1) {
-        if (node.matches?.(formSelector)) init();
-        node.querySelectorAll?.(formSelector).forEach(init);
-      }
-    }));
-  }).observe(document.body, { childList: true, subtree: true });
+  // SPA support
+  new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(node => {
+    if (node.nodeType === 1 && node.matches?.('form')) init();
+  }))).observe(document.body, { childList: true, subtree: true });
 
   window.addEventListener('beforeunload', onUnload);
   window.addEventListener('pagehide', onUnload);
 
-  console.log('%cFormMirror Production Ready ✅', 'color:#10b981;font-weight:bold', projectId);
+  console.log('%cFormMirror Active ✅', 'color:#10b981;font-weight:bold', projectId);
 })();
+
+
+/* FormMirror Tracking Script — Production v4.0 */
+// (() => {
+//   'use strict';
+
+//   const script = document.currentScript;
+//   if (!script) return;
+
+//   const projectId = script.dataset.projectId || script.dataset.pid;
+//   if (!projectId) {
+//     console.error('FormMirror: Missing data-project-id');
+//     return;
+//   }
+
+//   const formSelector = script.dataset.formSelector || 'form';
+
+//   // PRODUCTION ENDPOINT — always points to your live site
+//   // In public/track.js — change only this line  
+//   const API_ENDPOINT = 'https://track.grhous014.workers.dev';
+//   // const API_ENDPOINT = 'https://formmirror.vercel.app/api/track';
+
+//   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+//   const focusedFields = new Map();
+//   let submitted = false;
+//   const pageStart = Date.now();
+
+//   // 100% safe payload — no DOM references, no cycles
+//   const payload = (type, field = null, duration = null) => ({
+//     project_id: projectId,
+//     session_id: sessionId,
+//     event_type: type,
+//     field_name: field || null,
+//     duration: duration || null,
+//     timestamp: new Date().toISOString(),
+//     path: location.pathname + location.search,
+//     referrer: document.referrer || null,
+//     ua: navigator.userAgent.slice(0, 200)
+//   });
+
+//   const send = (type, field, duration) => {
+//     const data = payload(type, field, duration);
+//     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+
+//     // sendBeacon = best delivery guarantee
+//     if (navigator.sendBeacon?.(API_ENDPOINT, blob)) return;
+
+//     // fetch + keepalive fallback
+//     fetch(API_ENDPOINT, {
+//       method: 'POST',
+//       body: blob,
+//       headers: { 'Content-Type': 'application/json' },
+//       mode: 'cors',
+//       credentials: 'omit',
+//       keepalive: true
+//     }).catch(() => {});
+//   };
+
+//   const onFocus = e => {
+//     const el = e.target;
+//     const name = el.name || el.id || el.placeholder || el.type || 'unknown';
+//     focusedFields.set(el, { name, time: Date.now() });
+//     send('focus', name);
+//   };
+
+//   const onBlur = e => {
+//     const info = focusedFields.get(e.target);
+//     if (info) {
+//       send('blur', info.name, Date.now() - info.time);
+//       focusedFields.delete(e.target);
+//     }
+//   };
+
+//   const onInput = e => {
+//     const name = e.target.name || e.target.id || e.target.placeholder || 'unknown';
+//     send('input', name);
+//   };
+
+//   const onSubmit = e => {
+//     if (submitted) return;
+//     submitted = true;
+//     const name = e.target.name || e.target.id || 'form';
+//     send('submit', name);
+//     focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
+//     focusedFields.clear();
+//   };
+
+//   const onUnload = () => {
+//     if (submitted) return;
+//     send('abandon', 'page', Date.now() - pageStart);
+//     focusedFields.forEach(info => send('abandon', info.name, Date.now() - info.time));
+//   };
+
+//   const init = () => {
+//     document.querySelectorAll(formSelector).forEach(form => {
+//       if (form.dataset.fm) return;
+//       form.dataset.fm = '1';
+
+//       form.addEventListener('submit', onSubmit);
+//       form.querySelectorAll('input, textarea, select').forEach(f => {
+//         f.addEventListener('focus', onFocus);
+//         f.addEventListener('blur', onBlur);
+//         f.addEventListener('input', onInput);
+//         f.addEventListener('change', onInput);
+//       });
+//     });
+//   };
+
+//   if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', init);
+//   } else {
+//     init();
+//   }
+
+//   new MutationObserver(muts => {
+//     muts.forEach(m => m.addedNodes.forEach(node => {
+//       if (node.nodeType === 1) {
+//         if (node.matches?.(formSelector)) init();
+//         node.querySelectorAll?.(formSelector).forEach(init);
+//       }
+//     }));
+//   }).observe(document.body, { childList: true, subtree: true });
+
+//   window.addEventListener('beforeunload', onUnload);
+//   window.addEventListener('pagehide', onUnload);
+
+//   console.log('%cFormMirror Production Ready ✅', 'color:#10b981;font-weight:bold', projectId);
+// })();
 
 
 // /*
