@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
-export const runtime = 'edge' // أسرع شيء
+export const runtime = 'edge' 
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       })      
   }
 
-  // 1×1 شفاف
+  
   const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
 
   return new Response(GIF, {

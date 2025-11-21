@@ -27,23 +27,29 @@ const FRAMEWORKS = [
 ] as const
 
 const generateCode = (framework: string, projectId: string, projectName: string) => {
-  const scriptUrl = `${SITE_URL}/a1.js`
-  const comment = `FormMirror: Track "${projectName}" (ID: ${projectId})`
+  // Use more innocuous script names
+  const scriptUrl = `${SITE_URL}/static/fm-core.js`
+  // Or even better, use a versioned CDN-style path:
+  // const scriptUrl = `${SITE_URL}/cdn/v1/analytics.min.js`
+  
+  const comment = `Analytics: "${projectName}"`
 
+  // Use less obvious data attribute names
   const inlineScript = `(function(){
-    if (document.getElementById('formmirror-script')) return;
+    if (window.__fm_loaded) return;
+    window.__fm_loaded = true;
     const s = document.createElement('script');
-    s.id = 'formmirror-script';
     s.src = '${scriptUrl}';
-    s.setAttribute('data-pid', '${projectId}');
+    s.dataset.projectId = '${projectId}';
     s.async = true;
+    s.setAttribute('crossorigin', 'anonymous');
     document.head.appendChild(s);
   })();`
 
   const codes: Record<string, { code: string; filename: string }> = {
     html: {
       code: `<!-- ${comment} -->
-<script defer data-pid="${projectId}" src="${scriptUrl}"></script>`,
+<script defer data-project-id="${projectId}" src="${scriptUrl}" crossorigin="anonymous"></script>`,
       filename: 'Add to <head> or before </body>'
     },
 
@@ -51,40 +57,41 @@ const generateCode = (framework: string, projectId: string, projectName: string)
       code: `// ${comment}
 import { useEffect } from 'react'
 
-export const FormMirror = () => {
+export const Analytics = () => {
   useEffect(() => {
     ${inlineScript}
   }, [])
   return null
 }
 
-// Add <FormMirror /> once in your root component (e.g. App.tsx)`,
-      filename: 'FormMirror.tsx'
+// Add <Analytics /> once in your root component (e.g. App.tsx)`,
+      filename: 'Analytics.tsx'
     },
 
     nextjs: {
       code: `// ${comment}
 import Script from 'next/script'
 
-export default function FormMirror() {
+export default function Analytics() {
   return (
     <Script
-      id="formmirror-script"
+      id="fm-analytics"
       src="${scriptUrl}"
-      data-pid="${projectId}"
+      data-project-id="${projectId}"
       strategy="afterInteractive"
+      crossOrigin="anonymous"
     />
   )
 }
 
-// Add <FormMirror /> in app/layout.tsx or pages/_app.tsx`,
-      filename: 'FormMirror.tsx'
+// Add <Analytics /> in app/layout.tsx or pages/_app.tsx`,
+      filename: 'Analytics.tsx'
     },
 
     vanilla: {
       code: `// ${comment}
 ${inlineScript}`,
-      filename: 'formmirror.js'
+      filename: 'analytics.js'
     },
 
     vue: {
@@ -126,10 +133,149 @@ export class AppComponent implements OnInit {
 }`,
       filename: 'app.component.ts'
     },
+
+    wordpress: {
+      code: `<!-- ${comment} -->
+<!-- Add this to your theme's header.php or use a plugin like "Insert Headers and Footers" -->
+<script>
+${inlineScript}
+</script>`,
+      filename: 'WordPress Integration'
+    },
+
+    shopify: {
+      code: `<!-- ${comment} -->
+<!-- Add this to Settings → Checkout → Order status page → Additional scripts -->
+<script>
+${inlineScript}
+</script>`,
+      filename: 'Shopify Integration'
+    },
   }
 
   return codes[framework] || codes.html
 }
+
+// Alternative: Generate randomized script names per project for extra stealth
+// const generateObfuscatedScriptUrl = (projectId: string) => {
+//   // Create a deterministic but non-obvious hash from project ID
+//   const hash = projectId.split('').reduce((acc, char) => {
+//     return ((acc << 5) - acc) + char.charCodeAt(0) | 0
+//   }, 0)
+  
+//   const obfuscated = Math.abs(hash).toString(36).slice(0, 8)
+  
+//   // Looks like a normal asset: /assets/js/core-a7b3c2d1.js
+//   return `${SITE_URL}/assets/js/core-${obfuscated}.js`
+// }
+
+// Usage in your code:
+// const scriptUrl = generateObfuscatedScriptUrl(projectId)
+
+// const generateCode = (framework: string, projectId: string, projectName: string) => {
+//   const scriptUrl = `${SITE_URL}/a1.js`
+//   const comment = `FormMirror: Track "${projectName}" (ID: ${projectId})`
+
+//   const inlineScript = `(function(){
+//     if (document.getElementById('formmirror-script')) return;
+//     const s = document.createElement('script');
+//     s.id = 'formmirror-script';
+//     s.src = '${scriptUrl}';
+//     s.setAttribute('data-pid', '${projectId}');
+//     s.async = true;
+//     document.head.appendChild(s);
+//   })();`
+
+//   const codes: Record<string, { code: string; filename: string }> = {
+//     html: {
+//       code: `<!-- ${comment} -->
+// <script defer data-pid="${projectId}" src="${scriptUrl}"></script>`,
+//       filename: 'Add to <head> or before </body>'
+//     },
+
+//     react: {
+//       code: `// ${comment}
+// import { useEffect } from 'react'
+
+// export const FormMirror = () => {
+//   useEffect(() => {
+//     ${inlineScript}
+//   }, [])
+//   return null
+// }
+
+// // Add <FormMirror /> once in your root component (e.g. App.tsx)`,
+//       filename: 'FormMirror.tsx'
+//     },
+
+//     nextjs: {
+//       code: `// ${comment}
+// import Script from 'next/script'
+
+// export default function FormMirror() {
+//   return (
+//     <Script
+//       id="formmirror-script"
+//       src="${scriptUrl}"
+//       data-pid="${projectId}"
+//       strategy="afterInteractive"
+//     />
+//   )
+// }
+
+// // Add <FormMirror /> in app/layout.tsx or pages/_app.tsx`,
+//       filename: 'FormMirror.tsx'
+//     },
+
+//     vanilla: {
+//       code: `// ${comment}
+// ${inlineScript}`,
+//       filename: 'formmirror.js'
+//     },
+
+//     vue: {
+//       code: `<script setup>
+// // ${comment}
+// import { onMounted } from 'vue'
+
+// onMounted(() => {
+//   ${inlineScript}
+// })
+// </script>`,
+//       filename: 'App.vue or main.ts'
+//     },
+
+//     svelte: {
+//       code: `<script>
+//   // ${comment}
+//   import { onMount } from 'svelte'
+
+//   onMount(() => {
+//     ${inlineScript}
+//   })
+// </script>`,
+//       filename: '+layout.svelte or App.svelte'
+//     },
+
+//     angular: {
+//       code: `// ${comment}
+// import { Component, OnInit } from '@angular/core'
+
+// @Component({
+//   selector: 'app-root',
+//   template: ''
+// })
+// export class AppComponent implements OnInit {
+//   ngOnInit(): void {
+//     ${inlineScript}
+//   }
+// }`,
+//       filename: 'app.component.ts'
+//     },
+//   }
+
+//   return codes[framework] || codes.html
+// }
 
 export default function TrackingCodeModal({
   projectId,

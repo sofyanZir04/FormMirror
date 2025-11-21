@@ -1,4 +1,4 @@
-/* FormMirror – Final Production Tracking Script */
+/* FormMirror – Enhanced Anti-Detection Script */
 (() => {
   'use strict';
 
@@ -8,35 +8,56 @@
   const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
   if (!projectId) return;
 
-  const sessionId = 's' + Date.now() + Math.random().toString(36).slice(2);
-  const PIXEL = 'https://formmirror.vercel.app/c';
+  const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  // Use a more innocuous endpoint name
+  const ENDPOINT = 'https://formmirror.vercel.app/api/analytics';
 
+  // Use fetch with keepalive instead of Image pixels
   const track = (e, n = '', d = '') => {
-    const p = new URLSearchParams({
-      i: projectId,
-      s: sessionId,
-      e: e,
-      n: n,
-      d: d,
-      _: Date.now() // cache buster – مهم جدًا
-    });
-    new Image().src = PIXEL + '?' + p;
-  };
+    try {
+      const payload = {
+        pid: projectId,
+        sid: sessionId,
+        evt: e,
+        fld: n,
+        dur: d,
+        ts: Date.now()
+      };
 
-  // تتبع جميع النماذج تلقائيًا
+      // Use sendBeacon as primary method (more reliable, less detectable)
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payload)], { 
+          type: 'application/json' 
+        });
+        navigator.sendBeacon(ENDPOINT, blob);
+      } else {
+        // Fallback to fetch with keepalive
+        fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          mode: 'no-cors' // Prevents CORS errors, but no response handling
+        }).catch(() => {}); // Silently fail
+      }
+    } catch (err) {
+      // Silently handle errors to prevent console spam
+    }
+  };
+  
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
-      form.addEventListener('submit', () => track('submit'));
+      form.addEventListener('submit', () => track('submit'), { passive: true });
 
       form.querySelectorAll('input, textarea, select').forEach(field => {
         const name = field.name || field.id || field.placeholder || 'field';
 
-        field.addEventListener('focus', () => track('focus', name));
-        field.addEventListener('blur', () => track('blur', name));
-        field.addEventListener('input', () => track('input', name));
+        field.addEventListener('focus', () => track('focus', name), { passive: true });
+        field.addEventListener('blur', () => track('blur', name), { passive: true });
+        field.addEventListener('input', () => track('input', name), { passive: true });
       });
     });
   };
@@ -47,15 +68,84 @@
     init();
   }
 
-  // دعم SPAs (نماذج تتحمل ديناميكيًا)
-  new MutationObserver(muts => {
+  // Enhanced mutation observer
+  const observer = new MutationObserver(muts => {
     muts.forEach(m => m.addedNodes.forEach(node => {
-      if (node.nodeType === 1 && node.matches?.('form')) init();
+      if (node.nodeType === 1) {
+        if (node.matches?.('form')) {
+          init();
+        } else if (node.querySelector?.('form')) {
+          init();
+        }
+      }
     }));
-  }).observe(document.body, { childList: true, subtree: true });
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
 
-  console.log('%c✓ FormMirror Active', 'color:#10b981;font-weight:bold');
+  // Optional: less obvious console message
+  setTimeout(() => {
+    console.log('%c✓ Analytics Ready', 'color:#10b981;font-weight:bold');
+  }, 100);
 })();
+
+// /* FormMirror – Final Production Tracking Script */
+// (() => {
+//   'use strict';
+
+//   const script = document.currentScript;
+//   if (!script) return;
+
+//   const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
+//   if (!projectId) return;
+
+//   const sessionId = 's' + Date.now() + Math.random().toString(36).slice(2);
+//   const PIXEL = 'https://formmirror.vercel.app/p';
+
+//   const track = (e, n = '', d = '') => {
+//     const p = new URLSearchParams({
+//       i: projectId,
+//       s: sessionId,
+//       e: e,
+//       n: n,
+//       d: d,
+//       _: Date.now() 
+//     });
+//     new Image().src = PIXEL + '?' + p;
+//   };
+  
+//   const init = () => {
+//     document.querySelectorAll('form').forEach(form => {
+//       if (form.dataset.fm) return;
+//       form.dataset.fm = '1';
+
+//       form.addEventListener('submit', () => track('submit'));
+
+//       form.querySelectorAll('input, textarea, select').forEach(field => {
+//         const name = field.name || field.id || field.placeholder || 'field';
+
+//         field.addEventListener('focus', () => track('focus', name));
+//         field.addEventListener('blur', () => track('blur', name));
+//         field.addEventListener('input', () => track('input', name));
+//       });
+//     });
+//   };
+
+//   if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', init);
+//   } else {
+//     init();
+//   }
+
+  
+//   new MutationObserver(muts => {
+//     muts.forEach(m => m.addedNodes.forEach(node => {
+//       if (node.nodeType === 1 && node.matches?.('form')) init();
+//     }));
+//   }).observe(document.body, { childList: true, subtree: true });
+
+//   console.log('%c✓ FormMirror Active', 'color:#10b981;font-weight:bold');
+// })();
 
 
 // (() => {
