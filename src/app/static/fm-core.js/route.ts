@@ -1,20 +1,134 @@
 // app/static/fm-core.js/route.ts
-// OR app/cdn/v1/analytics.min.js/route.ts
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+
+export const runtime = 'edge'
 
 export async function GET() {
-  // Read your actual tracking script
-  const scriptPath = path.join(process.cwd(), 'public', 'tracking-script.js')
-  const script = fs.readFileSync(scriptPath, 'utf-8')
+  // Your tracking script content
+  const script = `
+/* FormMirror – Enhanced Anti-Detection Script */
+(() => {
+  'use strict';
+
+  const script = document.currentScript;
+  if (!script) return;
+
+  const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
+  if (!projectId) return;
+
+  const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  const ENDPOINT = window.location.protocol + '//' + 'formmirror.vercel.app' + '/api/analytics';
+
+  let queue = [];
+  let timer = null;
+
+  const flush = () => {
+    if (queue.length === 0) return;
+    
+    const batch = [...queue];
+    queue = [];
+
+    try {
+      const payload = {
+        pid: projectId,
+        sid: sessionId,
+        events: batch,
+        ts: Date.now()
+      };
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payload)], { 
+          type: 'application/json' 
+        });
+        navigator.sendBeacon(ENDPOINT, blob);
+      } else {
+        fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          mode: 'no-cors'
+        }).catch(() => {});
+      }
+    } catch (err) {}
+  };
+
+  const track = (e, n = '', d = '') => {
+    queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+    clearTimeout(timer);
+    timer = setTimeout(flush, 300);
+  };
+
+  window.addEventListener('beforeunload', flush, { capture: true });
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flush();
+  });
   
+  const init = () => {
+    document.querySelectorAll('form').forEach(form => {
+      if (form.dataset.fm) return;
+      form.dataset.fm = '1';
+
+      form.addEventListener('submit', () => track('submit'), { passive: true });
+
+      form.querySelectorAll('input, textarea, select').forEach(field => {
+        const name = field.name || field.id || field.placeholder || 'field';
+
+        field.addEventListener('focus', () => track('focus', name), { passive: true });
+        field.addEventListener('blur', () => track('blur', name), { passive: true });
+        field.addEventListener('input', () => track('input', name), { passive: true });
+      });
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  const observer = new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType === 1) {
+        if (node.matches?.('form')) {
+          init();
+        } else if (node.querySelector?.('form')) {
+          init();
+        }
+      }
+    }));
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  setTimeout(() => {
+    console.log('%c✓ Analytics Ready', 'color:#10b981;font-weight:bold');
+  }, 100);
+})();
+  `.trim()
+
+  // CRITICAL: Proper headers to avoid OpaqueResponseBlocking
   return new NextResponse(script, {
+    status: 200,
     headers: {
-      'Content-Type': 'application/javascript',
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Content-Type': 'application/javascript; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       'X-Content-Type-Options': 'nosniff',
+    },
+  })
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     },
   })
 }

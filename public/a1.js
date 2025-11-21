@@ -1,4 +1,5 @@
 /* FormMirror – Enhanced Anti-Detection Script */
+/* FormMirror – Enhanced Anti-Detection Script */
 (() => {
   'use strict';
 
@@ -12,19 +13,25 @@
   // Use a more innocuous endpoint name
   const ENDPOINT = 'https://formmirror.vercel.app/api/analytics';
 
-  // Use fetch with keepalive instead of Image pixels
-  const track = (e, n = '', d = '') => {
+  // Queue to batch requests and prevent race conditions
+  let queue = [];
+  let timer = null;
+
+  const flush = () => {
+    if (queue.length === 0) return;
+    
+    const batch = [...queue];
+    queue = [];
+
     try {
       const payload = {
         pid: projectId,
         sid: sessionId,
-        evt: e,
-        fld: n,
-        dur: d,
+        events: batch,
         ts: Date.now()
       };
 
-      // Use sendBeacon as primary method (more reliable, less detectable)
+      // Use sendBeacon as primary method (most reliable)
       if (navigator.sendBeacon) {
         const blob = new Blob([JSON.stringify(payload)], { 
           type: 'application/json' 
@@ -37,13 +44,25 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           keepalive: true,
-          mode: 'no-cors' // Prevents CORS errors, but no response handling
-        }).catch(() => {}); // Silently fail
+          mode: 'no-cors'
+        }).catch(() => {});
       }
-    } catch (err) {
-      // Silently handle errors to prevent console spam
-    }
+    } catch (err) {}
   };
+
+  const track = (e, n = '', d = '') => {
+    queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+    
+    // Debounce to batch events
+    clearTimeout(timer);
+    timer = setTimeout(flush, 300);
+  };
+
+  // Flush on page unload
+  window.addEventListener('beforeunload', flush, { capture: true });
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flush();
+  });
   
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
@@ -88,7 +107,6 @@
     console.log('%c✓ Analytics Ready', 'color:#10b981;font-weight:bold');
   }, 100);
 })();
-
 // /* FormMirror – Final Production Tracking Script */
 // (() => {
 //   'use strict';
