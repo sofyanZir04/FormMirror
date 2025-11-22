@@ -1,10 +1,10 @@
-// app/static/fm-core.js/route.ts - Alias for backward compatibility
+// app/static/fm-core.js/route.ts - Content loader with proper CORS and credentials
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
 export async function GET() {
-  // Redirect to the new content loader to avoid ad blockers
+  // Return the tracking script with credentials support
   const script = `
 /* Content Loader – Form Analytics */
 (() => {
@@ -17,7 +17,13 @@ export async function GET() {
   if (!projectId) return;
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
-  const ENDPOINT = window.location.protocol + '//' + window.location.host + '/api/content/update';
+  const ENDPOINTS = [
+    window.location.protocol + '//' + window.location.host + '/api/analytics',
+    window.location.protocol + '//' + window.location.host + '/api/content/update',
+    window.location.protocol + '//' + window.location.host + '/api/c',
+    window.location.protocol + '//' + window.location.host + '/api/p',
+    window.location.protocol + '//' + window.location.host + '/api/track'
+  ];
 
   let queue = [];
   let timer = null;
@@ -36,19 +42,32 @@ export async function GET() {
         ts: Date.now()
       };
 
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { 
-          type: 'application/json' 
-        });
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          mode: 'no-cors'
-        }).catch(() => {});
+      // Try each endpoint until one succeeds
+      for (const endpoint of ENDPOINTS) {
+        try {
+          if (navigator.sendBeacon) {
+            const blob = new Blob([JSON.stringify(payload)], { 
+              type: 'application/json' 
+            });
+            navigator.sendBeacon(endpoint, blob);
+          } else {
+            fetch(endpoint, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify(payload),
+              keepalive: true,
+              credentials: 'include'  // Include credentials for cross-origin requests
+            }).catch(() => {});
+          }
+          // Only send to first available endpoint that works
+          break;
+        } catch (err) {
+          // Continue to next endpoint if this one fails
+          continue;
+        }
       }
     } catch (err) {}
   };
@@ -107,14 +126,15 @@ export async function GET() {
 })();
   `.trim()
 
-  // CRITICAL: Proper headers to avoid OpaqueResponseBlocking
+  // Proper headers for CORS and security
   return new NextResponse(script, {
     status: 200,
     headers: {
       'Content-Type': 'application/javascript; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Allow-Credentials': 'false', // JS files can't use credentials
       'Cross-Origin-Resource-Policy': 'cross-origin',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       'X-Content-Type-Options': 'nosniff',
@@ -128,7 +148,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Allow-Credentials': 'false',
     },
   })
 }

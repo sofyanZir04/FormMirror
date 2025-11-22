@@ -1,12 +1,12 @@
-// app/assets/js/content-loader.js/route.ts
+// app/track.js/route.ts - Dynamic tracking script endpoint
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
 export async function GET() {
-  // Your tracking script content (renamed to avoid ad blockers)
+  // Tracking script content - renamed to avoid ad blockers
   const script = `
-/* Content Loader - Form Analytics */
+/* FormMirror Tracking Script - Privacy-friendly Analytics */
 (() => {
   'use strict';
 
@@ -17,7 +17,7 @@ export async function GET() {
   if (!projectId) return;
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
-  // Use a more innocuous endpoint name
+  // Use multiple endpoints to avoid ad blockers (fallback mechanism)
   const ENDPOINTS = [
     window.location.protocol + '//' + window.location.host + '/api/content/update',
     window.location.protocol + '//' + window.location.host + '/api/c',
@@ -124,7 +124,7 @@ export async function GET() {
   
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // Optional: less obvious console message
+  // Less obvious console message to avoid detection
   setTimeout(() => {
     console.log('%c✓ Content Loader Ready', 'color:#10b981;font-weight:bold');
   }, 100);

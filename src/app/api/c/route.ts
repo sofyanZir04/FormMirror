@@ -1,4 +1,4 @@
-// app/api/content/update/route.ts
+// app/api/c/route.ts - Content update endpoint (alternative to p)
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
