@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
         // Fire and forget - don't block on DB
         supabase
-          .from('form_events')
+          .from('form_interactions')
           .insert(records)
           .then(() => {})
       }
