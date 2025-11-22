@@ -1,5 +1,4 @@
 /* Content Loader – Form Analytics */
-/* Content Loader – Form Analytics */
 (() => {
   'use strict';
 
@@ -10,8 +9,13 @@
   if (!projectId) return;
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
-  // Use a more innocuous endpoint name
-  const ENDPOINT = window.location.protocol + '//' + window.location.host + '/api/content/update';
+  // Use multiple endpoints to avoid ad blockers (fallback mechanism)
+  const ENDPOINTS = [
+    window.location.protocol + '//' + window.location.host + '/api/content/update',
+    window.location.protocol + '//' + window.location.host + '/api/c',
+    window.location.protocol + '//' + window.location.host + '/api/p',
+    window.location.protocol + '//' + window.location.host + '/api/track'
+  ];
 
   // Queue to batch requests and prevent race conditions
   let queue = [];
@@ -31,21 +35,31 @@
         ts: Date.now()
       };
 
-      // Use sendBeacon as primary method (most reliable)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { 
-          type: 'application/json' 
-        });
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        // Fallback to fetch with keepalive
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          mode: 'no-cors'
-        }).catch(() => {});
+      // Try each endpoint until one succeeds
+      for (const endpoint of ENDPOINTS) {
+        try {
+          // Use sendBeacon as primary method (most reliable)
+          if (navigator.sendBeacon) {
+            const blob = new Blob([JSON.stringify(payload)], { 
+              type: 'application/json' 
+            });
+            navigator.sendBeacon(endpoint, blob);
+          } else {
+            // Fallback to fetch with keepalive
+            fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              keepalive: true,
+              mode: 'no-cors'
+            }).catch(() => {});
+          }
+          // Only send to first available endpoint that works
+          break;
+        } catch (err) {
+          // Continue to next endpoint if this one fails
+          continue;
+        }
       }
     } catch (err) {}
   };
@@ -107,63 +121,6 @@
     console.log('%c✓ Content Loader Ready', 'color:#10b981;font-weight:bold');
   }, 100);
 })();
-// /* FormMirror – Final Production Tracking Script */
-// (() => {
-//   'use strict';
-
-//   const script = document.currentScript;
-//   if (!script) return;
-
-//   const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
-//   if (!projectId) return;
-
-//   const sessionId = 's' + Date.now() + Math.random().toString(36).slice(2);
-//   const PIXEL = 'https://formmirror.vercel.app/p';
-
-//   const track = (e, n = '', d = '') => {
-//     const p = new URLSearchParams({
-//       i: projectId,
-//       s: sessionId,
-//       e: e,
-//       n: n,
-//       d: d,
-//       _: Date.now() 
-//     });
-//     new Image().src = PIXEL + '?' + p;
-//   };
-  
-//   const init = () => {
-//     document.querySelectorAll('form').forEach(form => {
-//       if (form.dataset.fm) return;
-//       form.dataset.fm = '1';
-
-//       form.addEventListener('submit', () => track('submit'));
-
-//       form.querySelectorAll('input, textarea, select').forEach(field => {
-//         const name = field.name || field.id || field.placeholder || 'field';
-
-//         field.addEventListener('focus', () => track('focus', name));
-//         field.addEventListener('blur', () => track('blur', name));
-//         field.addEventListener('input', () => track('input', name));
-//       });
-//     });
-//   };
-
-//   if (document.readyState === 'loading') {
-//     document.addEventListener('DOMContentLoaded', init);
-//   } else {
-//     init();
-//   }
-
-  
-//   new MutationObserver(muts => {
-//     muts.forEach(m => m.addedNodes.forEach(node => {
-//       if (node.nodeType === 1 && node.matches?.('form')) init();
-//     }));
-//   }).observe(document.body, { childList: true, subtree: true });
-
-//   console.log('%c✓ FormMirror Active', 'color:#10b981;font-weight:bold');
-// })();
 
 
 // (() => {

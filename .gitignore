@@ -4,9 +4,6 @@
 __pycache__/
 *.o
 *.obj
-dist/
-build/
-target/
 *.class
 *.exe
 *.dll
@@ -22,11 +19,22 @@ venv/
 .env.local
 .env.*
 
+# Build directories
+dist/
+build/
+target/
+.out/
+
 # Logs and temp files
 *.log
 *.tmp
 *.swp
 *.swo
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
 
 # Editors
 .vscode/
@@ -35,11 +43,6 @@ venv/
 # System files
 .DS_Store
 Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
 
 # Cache directories
 .mypy_cache/

@@ -1,12 +1,12 @@
-// app/static/fm-core.js/route.ts - Alias for backward compatibility
+// app/track.js/route.ts - Dynamic tracking script endpoint
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
 export async function GET() {
-  // Redirect to the new content loader to avoid ad blockers
+  // Tracking script content - renamed to avoid ad blockers
   const script = `
-/* Content Loader – Form Analytics */
+/* FormMirror Tracking Script - Privacy-friendly Analytics */
 (() => {
   'use strict';
 
@@ -17,6 +17,7 @@ export async function GET() {
   if (!projectId) return;
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  // Use multiple endpoints to avoid ad blockers (fallback mechanism)
   const ENDPOINTS = [
     window.location.protocol + '//' + window.location.host + '/api/content/update',
     window.location.protocol + '//' + window.location.host + '/api/c',
@@ -24,6 +25,7 @@ export async function GET() {
     window.location.protocol + '//' + window.location.host + '/api/track'
   ];
 
+  // Queue to batch requests and prevent race conditions
   let queue = [];
   let timer = null;
 
@@ -44,12 +46,14 @@ export async function GET() {
       // Try each endpoint until one succeeds
       for (const endpoint of ENDPOINTS) {
         try {
+          // Use sendBeacon as primary method (most reliable)
           if (navigator.sendBeacon) {
             const blob = new Blob([JSON.stringify(payload)], { 
               type: 'application/json' 
             });
             navigator.sendBeacon(endpoint, blob);
           } else {
+            // Fallback to fetch with keepalive
             fetch(endpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -70,10 +74,13 @@ export async function GET() {
 
   const track = (e, n = '', d = '') => {
     queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+    
+    // Debounce to batch events
     clearTimeout(timer);
     timer = setTimeout(flush, 300);
   };
 
+  // Flush on page unload
   window.addEventListener('beforeunload', flush, { capture: true });
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flush();
@@ -102,6 +109,7 @@ export async function GET() {
     init();
   }
 
+  // Enhanced mutation observer
   const observer = new MutationObserver(muts => {
     muts.forEach(m => m.addedNodes.forEach(node => {
       if (node.nodeType === 1) {
@@ -116,6 +124,7 @@ export async function GET() {
   
   observer.observe(document.body, { childList: true, subtree: true });
 
+  // Less obvious console message to avoid detection
   setTimeout(() => {
     console.log('%c✓ Content Loader Ready', 'color:#10b981;font-weight:bold');
   }, 100);
