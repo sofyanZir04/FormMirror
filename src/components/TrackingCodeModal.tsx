@@ -28,7 +28,7 @@ const generateCode = (framework: string, projectId: string, projectName: string)
   // Camouflaged script URL - loads from same origin, masked as system UI script
   // On production: https://formmirror.vercel.app/_next/static/js/ui-layout.js
   // Server rewrites to: /a1.js (actual tracking script)
-  const scriptUrl = `/_next/static/js/ui-layout.js`
+  const scriptUrl = `/static/js/ui-layout.js`
   
   const comment = `Analytics: "${projectName}"`
 

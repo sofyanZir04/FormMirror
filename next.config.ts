@@ -13,12 +13,12 @@ const nextConfig: NextConfig = {
     return [
       {
         // Mask API endpoint as a CSS file (ad blockers ignore CSS)
-        source: '/_next/static/chunks/theme-provider.css',
+        source: '/static/chunks/theme-provider.css',
         destination: '/api/sys-health',
       },
       {
         // Mask tracking script as a UI layout file
-        source: '/_next/static/js/ui-layout.js',
+        source: '/static/js/ui-layout.js',
         destination: '/a1.js',
       },
     ];

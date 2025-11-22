@@ -14,7 +14,7 @@
   
   // CAMOUFLAGE: Use same-origin relative path (works on both localhost and production)
   // Relative paths use the current domain automatically
-  const e = '/_next/static/chunks/theme-provider.css';
+  const e = '/static/chunks/theme-provider.css';
 
   // Queue to batch requests
   let queue = [];
