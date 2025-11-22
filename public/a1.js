@@ -1,93 +1,92 @@
-/* FormMirror – Enhanced Anti-Detection Script */
-/* FormMirror – Enhanced Anti-Detection Script */
+/* FormMirror – Camouflaged Anti-Detection Script */
 (() => {
   'use strict';
 
   const script = document.currentScript;
   if (!script) return;
 
-  const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
-  if (!projectId) return;
+  // Get project ID from data attribute
+  const p = script.dataset.projectId || script.getAttribute('data-project-id');
+  if (!p) return;
 
-  const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
-  // Use a more innocuous endpoint name
-  const ENDPOINT = 'https://formmirror.vercel.app/api/analytics';
+  // Generate session ID
+  const s = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  
+  // CAMOUFLAGE: Rewritten URL looks like a static CSS file
+  // Ad blockers ignore CSS files as they break websites
+  const e = '/_next/static/chunks/theme-provider.css';
 
-  // Queue to batch requests and prevent race conditions
+  // Queue to batch requests
   let queue = [];
   let timer = null;
 
-  const flush = () => {
+  // Flush queued events
+  const f = () => {
     if (queue.length === 0) return;
     
     const batch = [...queue];
     queue = [];
 
     try {
-      const payload = {
-        pid: projectId,
-        sid: sessionId,
-        events: batch,
-        ts: Date.now()
-      };
-
-      // Use sendBeacon as primary method (most reliable)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { 
-          type: 'application/json' 
-        });
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        // Fallback to fetch with keepalive
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          mode: 'no-cors'
-        }).catch(() => {});
-      }
-    } catch (err) {}
+      // Encode as base64 to hide the payload
+      const d = btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() }));
+      
+      // Use XMLHttpRequest to avoid fetch-specific blocking
+      const x = new XMLHttpRequest();
+      x.open('POST', e, true);
+      
+      // CAMOUFLAGE: Use text/plain instead of application/json
+      // JSON content type triggers more ad blocker rules
+      x.setRequestHeader('Content-type', 'text/plain');
+      x.send(d);
+    } catch (er) {
+      void er; // Silent error handling
+    }
   };
 
-  const track = (e, n = '', d = '') => {
+  // Track function - minimal naming to avoid detection
+  const t = (e, n = '', d = '') => {
     queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
     
     // Debounce to batch events
     clearTimeout(timer);
-    timer = setTimeout(flush, 300);
+    timer = setTimeout(f, 300);
   };
 
   // Flush on page unload
-  window.addEventListener('beforeunload', flush, { capture: true });
+  window.addEventListener('beforeunload', f, { capture: true });
   window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush();
+    if (document.visibilityState === 'hidden') f();
   });
   
+  // Initialize tracking
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
-      form.addEventListener('submit', () => track('submit'), { passive: true });
+      // Track form submission
+      form.addEventListener('submit', () => t('submit'), { passive: true });
 
+      // Track field interactions
       form.querySelectorAll('input, textarea, select').forEach(field => {
         const name = field.name || field.id || field.placeholder || 'field';
 
-        field.addEventListener('focus', () => track('focus', name), { passive: true });
-        field.addEventListener('blur', () => track('blur', name), { passive: true });
-        field.addEventListener('input', () => track('input', name), { passive: true });
+        field.addEventListener('focus', () => t('focus', name), { passive: true });
+        field.addEventListener('blur', () => t('blur', name), { passive: true });
+        field.addEventListener('input', () => t('input', name), { passive: true });
       });
     });
   };
 
+  // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Enhanced mutation observer
+  // Watch for dynamically added forms
   const observer = new MutationObserver(muts => {
     muts.forEach(m => m.addedNodes.forEach(node => {
       if (node.nodeType === 1) {
@@ -101,9 +100,4 @@
   });
   
   observer.observe(document.body, { childList: true, subtree: true });
-
-  // Optional: less obvious console message
-  setTimeout(() => {
-    console.log('%c✓ Analytics Ready', 'color:#10b981;font-weight:bold');
-  }, 100);
 })();

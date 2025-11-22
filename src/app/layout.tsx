@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
+import TrackingScript from './TrackingScript'
 import LemonSqueezyScript from './LemonSqueezyScript';
 
 const inter = Inter({ subsets: ['latin'] })
@@ -152,6 +153,7 @@ export default function RootLayout({
           <Toaster position="top-right" />        
     
         </body>
+        <TrackingScript/>
         <LemonSqueezyScript/>
       </html>
     </>

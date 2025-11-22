@@ -8,6 +8,22 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // CRITICAL: Rewrites for ad-blocker camouflage
+  async rewrites() {
+    return [
+      {
+        // Mask API endpoint as a CSS file (ad blockers ignore CSS)
+        source: '/_next/static/chunks/theme-provider.css',
+        destination: '/api/sys-health',
+      },
+      {
+        // Mask tracking script as a UI layout file
+        source: '/_next/static/js/ui-layout.js',
+        destination: '/a1.js',
+      },
+    ];
+  },
+
   // CRITICAL: Allow CORS for tracking endpoint + keep your CSP safe
   async headers() {
     return [
@@ -49,15 +65,6 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
         ],
       },
-      // {
-      //   source: '/api/track',
-      //   headers: [
-      //     { key: 'Access-Control-Allow-Origin', value: '*' },
-      //     { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
-      //     { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-      //     { key: 'Access-Control-Max-Age', value: '86400' },
-      //   ],
-      // },
     ];
   },
 
