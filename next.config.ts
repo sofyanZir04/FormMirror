@@ -13,13 +13,13 @@ const nextConfig: NextConfig = {
     return [
       {
         // Mask API endpoint as a CSS file (ad blockers ignore CSS)
-        source: 'https://formmirror.vercel.app/static/chunks/theme-provider.css',
-        destination: 'https://formmirror.vercel.app/api/sys-health',
+        source: '/static/chunks/theme-provider.css',
+        destination: '/api/sys-health',
       },
       {
         // Mask tracking script as a UI layout file
-        source: 'https://formmirror.vercel.app/static/js/ui-layout.js',
-        destination: 'https://formmirror.vercel.app/a1.js',
+        source: '/static/js/ui-layout.js',
+        destination: '/a1.js',
       },
     ];
   },
