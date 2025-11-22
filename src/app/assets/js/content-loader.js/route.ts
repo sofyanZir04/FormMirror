@@ -1,12 +1,12 @@
-// app/static/fm-core.js/route.ts - Alias for backward compatibility
+// app/assets/js/content-loader.js/route.ts
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
 export async function GET() {
-  // Redirect to the new content loader to avoid ad blockers
+  // Your tracking script content (renamed to avoid ad blockers)
   const script = `
-/* Content Loader – Form Analytics */
+/* Content Loader - Form Analytics */
 (() => {
   'use strict';
 
@@ -17,8 +17,10 @@ export async function GET() {
   if (!projectId) return;
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  // Use a more innocuous endpoint name
   const ENDPOINT = window.location.protocol + '//' + window.location.host + '/api/content/update';
 
+  // Queue to batch requests and prevent race conditions
   let queue = [];
   let timer = null;
 
@@ -36,12 +38,14 @@ export async function GET() {
         ts: Date.now()
       };
 
+      // Use sendBeacon as primary method (most reliable)
       if (navigator.sendBeacon) {
         const blob = new Blob([JSON.stringify(payload)], { 
           type: 'application/json' 
         });
         navigator.sendBeacon(ENDPOINT, blob);
       } else {
+        // Fallback to fetch with keepalive
         fetch(ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,10 +59,13 @@ export async function GET() {
 
   const track = (e, n = '', d = '') => {
     queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+    
+    // Debounce to batch events
     clearTimeout(timer);
     timer = setTimeout(flush, 300);
   };
 
+  // Flush on page unload
   window.addEventListener('beforeunload', flush, { capture: true });
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flush();
@@ -87,6 +94,7 @@ export async function GET() {
     init();
   }
 
+  // Enhanced mutation observer
   const observer = new MutationObserver(muts => {
     muts.forEach(m => m.addedNodes.forEach(node => {
       if (node.nodeType === 1) {
@@ -101,6 +109,7 @@ export async function GET() {
   
   observer.observe(document.body, { childList: true, subtree: true });
 
+  // Optional: less obvious console message
   setTimeout(() => {
     console.log('%c✓ Content Loader Ready', 'color:#10b981;font-weight:bold');
   }, 100);
