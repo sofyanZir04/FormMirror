@@ -12,8 +12,8 @@
   // Generate session ID
   const s = 'u' + Date.now() + Math.random().toString(36).slice(2);
   
-  // CAMOUFLAGE: Rewritten URL looks like a static CSS file
-  // Ad blockers ignore CSS files as they break websites
+  // CAMOUFLAGE: Use same-origin relative path (works on both localhost and production)
+  // Relative paths use the current domain automatically
   const e = '/_next/static/chunks/theme-provider.css';
 
   // Queue to batch requests
@@ -45,8 +45,8 @@
   };
 
   // Track function - minimal naming to avoid detection
-  const t = (e, n = '', d = '') => {
-    queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+  const t = (ev, n = '', d = '') => {
+    queue.push({ evt: ev, fld: n, dur: d, t: Date.now() });
     
     // Debounce to batch events
     clearTimeout(timer);

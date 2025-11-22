@@ -1,62 +1,437 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
   <url>
-    <loc>https://formmirror.com/</loc>
-    <lastmod>2025-11-10</lastmod>
+    <loc>undefined/</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://formmirror.com/" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://formmirror.com/fr/" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://formmirror.com/de/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/" />
   </url>
   <url>
-    <loc>https://formmirror.com/pricing</loc>
-    <lastmod>2025-11-10</lastmod>
+    <loc>undefined/</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/" />
+  </url>
+  <url>
+    <loc>undefined/pricing</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://formmirror.com/pricing" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://formmirror.com/fr/pricing" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://formmirror.com/de/pricing" />
-  </url>  
-</urlset>
-
-<!-- <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://formmirror.com/</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/pricing" />
   </url>
   <url>
-    <loc>https://formmirror.com/demo</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>undefined/demo</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/demo" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/demo" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/demo" />
   </url>
   <url>
-    <loc>https://formmirror.com/auth/login</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>undefined/blog</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/blog" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/blog" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/blog" />
+  </url>
+  <url>
+    <loc>undefined/onboarding</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/onboarding"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/onboarding" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/onboarding" />
+  </url>
+  <url>
+    <loc>undefined/contact</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/contact" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/contact" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/contact" />
   </url>
   <url>
-    <loc>https://formmirror.com/auth/register</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>undefined/auth/login</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/auth/login"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/auth/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/auth/login" />
   </url>
   <url>
-    <loc>https://formmirror.com/privacy-policy</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <loc>undefined/auth/register</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/auth/register"
+    />
   </url>
   <url>
-    <loc>https://formmirror.com/terms</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>undefined/privacy-policy</loc>
+    <lastmod>2025-11-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/privacy-policy"
+    />
   </url>
-</urlset>  -->
+  <url>
+    <loc>undefined/terms</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/terms" />
+  </url>
+  <url>
+    <loc>undefined/fr/</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/fr/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/" />
+  </url>
+  <url>
+    <loc>undefined/fr/pricing</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/pricing"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/pricing" />
+  </url>
+  <url>
+    <loc>undefined/fr/demo</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/fr/demo" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/demo" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/demo" />
+  </url>
+  <url>
+    <loc>undefined/fr/blog</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/fr/blog" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/blog" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/blog" />
+  </url>
+  <url>
+    <loc>undefined/fr/onboarding</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/onboarding"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/fr/onboarding"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/fr/onboarding"
+    />
+  </url>
+  <url>
+    <loc>undefined/fr/contact</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/contact"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/contact" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/contact" />
+  </url>
+  <url>
+    <loc>undefined/fr/auth/login</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/auth/login"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/fr/auth/login"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/fr/auth/login"
+    />
+  </url>
+  <url>
+    <loc>undefined/fr/auth/register</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/fr/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/fr/auth/register"
+    />
+  </url>
+  <url>
+    <loc>undefined/fr/privacy-policy</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/fr/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/fr/privacy-policy"
+    />
+  </url>
+  <url>
+    <loc>undefined/fr/terms</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/fr/terms"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/fr/terms" />
+  </url>
+  <url>
+    <loc>undefined/de/</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/de/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/" />
+  </url>
+  <url>
+    <loc>undefined/de/pricing</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/pricing"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/pricing" />
+  </url>
+  <url>
+    <loc>undefined/de/demo</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/de/demo" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/demo" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/demo" />
+  </url>
+  <url>
+    <loc>undefined/de/blog</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="undefined/de/blog" />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/blog" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/blog" />
+  </url>
+  <url>
+    <loc>undefined/de/onboarding</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/onboarding"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/de/onboarding"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/de/onboarding"
+    />
+  </url>
+  <url>
+    <loc>undefined/de/contact</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/contact"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/contact" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/contact" />
+  </url>
+  <url>
+    <loc>undefined/de/auth/login</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/auth/login"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/de/auth/login"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/de/auth/login"
+    />
+  </url>
+  <url>
+    <loc>undefined/de/auth/register</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/de/auth/register"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/de/auth/register"
+    />
+  </url>
+  <url>
+    <loc>undefined/de/privacy-policy</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="undefined/fr/de/privacy-policy"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="undefined/de/de/privacy-policy"
+    />
+  </url>
+  <url>
+    <loc>undefined/de/terms</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="undefined/de/terms"
+    />
+    <xhtml:link rel="alternate" hreflang="fr" href="undefined/fr/de/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="undefined/de/de/terms" />
+  </url>
+</urlset>

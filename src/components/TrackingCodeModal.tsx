@@ -14,8 +14,6 @@ interface TrackingCodeModalProps {
   onClose: () => void
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://formmirror.vercel.app';
-
 const FRAMEWORKS = [
   { id: 'html', name: 'HTML', popular: true },
   { id: 'react', name: 'React', popular: true },
@@ -27,10 +25,10 @@ const FRAMEWORKS = [
 ] as const
 
 const generateCode = (framework: string, projectId: string, projectName: string) => {
-  // Use more innocuous script names
-  const scriptUrl = `${SITE_URL}/static/fm-core.js`
-  // Or even better, use a versioned CDN-style path:
-  // const scriptUrl = `${SITE_URL}/cdn/v1/analytics.min.js`
+  // Camouflaged script URL - loads from same origin, masked as system UI script
+  // On production: https://formmirror.vercel.app/_next/static/js/ui-layout.js
+  // Server rewrites to: /a1.js (actual tracking script)
+  const scriptUrl = `/_next/static/js/ui-layout.js`
   
   const comment = `Analytics: "${projectName}"`
 
