@@ -1,13 +1,13 @@
-// app/api/content/update/route.ts
+// app/api/v1/route.ts - Ad-blocker resistant analytics endpoint
 import { NextRequest } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
-  // Respond immediately to prevent binding abort
+  // Respond immediately with 200 OK to avoid detection
   const immediateResponse = new Response(null, {
-    status: 204,
+    status: 200,
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate, private',
       'Access-Control-Allow-Origin': '*',
@@ -23,23 +23,27 @@ export async function POST(req: NextRequest) {
       const contentType = req.headers.get('content-type')
       let data
 
-      // Handle both JSON and Blob formats (sendBeacon sends as Blob)
-      if (contentType?.includes('application/json')) {
+      // Handle both base64 encoded text/plain and regular formats
+      if (contentType?.includes('text/plain')) {
+        const encodedText = await req.text()
+        const decodedText = atob(encodedText) // Decode base64
+        data = JSON.parse(decodedText)
+      } else if (contentType?.includes('application/json')) {
         data = await req.json()
       } else {
         const text = await req.text()
         data = JSON.parse(text)
       }
 
-      const { pid, sid, events } = data
+      const { p, s, d } = data // projectId, sessionId, data (events)
 
-      if (pid && sid && events && Array.isArray(events)) {
+      if (p && s && d && Array.isArray(d)) {
         const supabase = createServerSupabaseClient()
         
         // Batch insert all events
-        const records = events.map((e: any) => ({
-          project_id: pid,
-          session_id: sid,
+        const records = d.map((e: any) => ({
+          project_id: p,
+          session_id: s,
           event_type: e.evt,
           field_name: e.fld || null,
           duration: e.dur ? Number(e.dur) : null,
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
           .then(() => {})
       }
     } catch (error) {
-      console.error('Content update error:', error)
+      // Silent error handling - no logging to avoid detection
     }
   })()
 
@@ -63,7 +67,7 @@ export async function POST(req: NextRequest) {
 // Handle OPTIONS for CORS preflight
 export async function OPTIONS() {
   return new Response(null, {
-    status: 204,
+    status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
