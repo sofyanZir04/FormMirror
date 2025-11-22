@@ -1,5 +1,4 @@
-/* Content Loader – Form Analytics */
-/* Content Loader – Form Analytics */
+// public/fm-core.js (renamed from a1.js)
 (() => {
   'use strict';
 
@@ -9,103 +8,125 @@
   const projectId = script.dataset.projectId || script.getAttribute('data-project-id');
   if (!projectId) return;
 
-  const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
-  // Use a more innocuous endpoint name
-  const ENDPOINT = window.location.protocol + '//' + window.location.host + '/api/content/update';
+  const sessionId = 'fm' + Date.now() + Math.random().toString(36).slice(2, 11);
+  
+  // Use innocuous endpoint name that won't trigger blockers
+  const apiBase = script.dataset.apiUrl || script.getAttribute('data-api-url') || '';
+  const ENDPOINT = `${apiBase}/api/feedback`; // Changed from /analytics
 
-  // Queue to batch requests and prevent race conditions
   let queue = [];
   let timer = null;
+  let sending = false;
 
-  const flush = () => {
-    if (queue.length === 0) return;
+  const send = async () => {
+    if (queue.length === 0 || sending) return;
     
+    sending = true;
     const batch = [...queue];
     queue = [];
 
     try {
-      const payload = {
-        pid: projectId,
-        sid: sessionId,
-        events: batch,
-        ts: Date.now()
+      // Use XMLHttpRequest instead of fetch (less suspicious to blockers)
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', ENDPOINT, true);
+      xhr.setRequestHeader('Content-Type', 'text/plain'); // Changed from application/json
+      xhr.withCredentials = false;
+      
+      // Disguise the payload structure
+      const payload = btoa(JSON.stringify({
+        p: projectId,
+        s: sessionId,
+        d: batch,
+        t: Date.now()
+      }));
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          sending = false;
+        }
       };
 
-      // Use sendBeacon as primary method (most reliable)
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { 
-          type: 'application/json' 
-        });
-        navigator.sendBeacon(ENDPOINT, blob);
-      } else {
-        // Fallback to fetch with keepalive
-        fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          mode: 'no-cors'
-        }).catch(() => {});
-      }
-    } catch (err) {}
+      xhr.send(payload);
+    } catch (err) {
+      sending = false;
+    }
   };
 
-  const track = (e, n = '', d = '') => {
-    queue.push({ evt: e, fld: n, dur: d, t: Date.now() });
+  const log = (type, name = '', extra = '') => {
+    queue.push({ 
+      e: type, 
+      n: name, 
+      x: extra, 
+      ts: Date.now() 
+    });
     
-    // Debounce to batch events
     clearTimeout(timer);
-    timer = setTimeout(flush, 300);
+    timer = setTimeout(send, 600);
   };
 
-  // Flush on page unload
-  window.addEventListener('beforeunload', flush, { capture: true });
-  window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush();
+  const cleanup = () => {
+    clearTimeout(timer);
+    send();
+  };
+
+  // Multiple unload listeners for reliability
+  ['beforeunload', 'pagehide', 'unload'].forEach(evt => {
+    window.addEventListener(evt, cleanup, { capture: true });
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') cleanup();
   });
   
-  const init = () => {
-    document.querySelectorAll('form').forEach(form => {
-      if (form.dataset.fm) return;
-      form.dataset.fm = '1';
+  const setup = () => {
+    document.querySelectorAll('form').forEach(f => {
+      if (f.dataset.fmInit) return;
+      f.dataset.fmInit = '1';
 
-      form.addEventListener('submit', () => track('submit'), { passive: true });
+      f.addEventListener('submit', () => log('s', f.id || f.name || 'form'), { passive: true });
 
-      form.querySelectorAll('input, textarea, select').forEach(field => {
-        const name = field.name || field.id || field.placeholder || 'field';
+      f.querySelectorAll('input, textarea, select').forEach(el => {
+        const id = el.name || el.id || el.type || 'field';
 
-        field.addEventListener('focus', () => track('focus', name), { passive: true });
-        field.addEventListener('blur', () => track('blur', name), { passive: true });
-        field.addEventListener('input', () => track('input', name), { passive: true });
+        el.addEventListener('focus', () => {
+          el.dataset.ft = Date.now();
+          log('f', id);
+        }, { passive: true });
+
+        el.addEventListener('blur', () => {
+          const ft = el.dataset.ft;
+          const dur = ft ? Date.now() - parseInt(ft) : 0;
+          log('b', id, dur);
+        }, { passive: true });
+
+        el.addEventListener('change', () => log('c', id), { passive: true });
       });
     });
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', setup);
   } else {
-    init();
+    setTimeout(setup, 0);
   }
 
-  // Enhanced mutation observer
-  const observer = new MutationObserver(muts => {
-    muts.forEach(m => m.addedNodes.forEach(node => {
-      if (node.nodeType === 1) {
-        if (node.matches?.('form')) {
-          init();
-        } else if (node.querySelector?.('form')) {
-          init();
+  // Observe DOM changes
+  const obs = new MutationObserver(muts => {
+    let changed = false;
+    muts.forEach(m => {
+      m.addedNodes.forEach(n => {
+        if (n.nodeType === 1 && (n.matches?.('form') || n.querySelector?.('form'))) {
+          changed = true;
         }
-      }
-    }));
+      });
+    });
+    if (changed) setup();
   });
   
-  observer.observe(document.body, { childList: true, subtree: true });
+  obs.observe(document.body, { childList: true, subtree: true });
 
-  // Optional: less obvious console message
-  setTimeout(() => {
-    console.log('%c✓ Content Loader Ready', 'color:#10b981;font-weight:bold');
-  }, 100);
+  // Initial page event
+  log('v', window.location.pathname);
 })();
 // /* FormMirror – Final Production Tracking Script */
 // (() => {

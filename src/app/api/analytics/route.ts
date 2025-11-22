@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
   // Forward to the new endpoint to avoid ad blockers
-  const url = new URL('/api/content/update', req.url.replace(req.nextUrl.pathname, ''));
+  const url = new URL('/api/feedback', req.url.replace(req.nextUrl.pathname, ''));
   const headers = new Headers(req.headers);
   headers.set('Content-Type', 'application/json');
 
