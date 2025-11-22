@@ -161,6 +161,339 @@ ${inlineScript}
   return codes[framework] || codes.html
 }
 
+const generateFormEntryCode = (framework: string, projectId: string, projectName: string) => {
+  const comment = `Form Entry: "${projectName}"`
+  
+  // Define the ad-blocker friendly form entry code for each framework
+  const codes: Record<string, { code: string; filename: string }> = {
+    html: {
+      code: `<!-- ${comment} -->
+<script>
+// FormMirror Form Entry Handler
+document.addEventListener('DOMContentLoaded', () => {
+  // Capture all form submissions
+  document.addEventListener('submit', async (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    
+    // Collect form data
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+      // Send form data to ad-blocker friendly endpoint
+      await fetch('/api/form-entry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: '${projectId}',
+          formId: form.id || form.name || 'unknown',
+          formData: data,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        })
+      });
+    } catch (error) {
+      // Fail silently to not affect form functionality
+      console.warn('FormMirror: Failed to record form submission', error);
+    }
+  });
+});
+</script>`,
+      filename: 'Add to <head> or before </body>'
+    },
+
+    react: {
+      code: `// ${comment}
+import { useEffect } from 'react';
+
+export const FormTracker = () => {
+  useEffect(() => {
+    const handleFormSubmit = async (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      try {
+        await fetch('/api/form-entry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectId: '${projectId}',
+            formId: form.id || form.name || 'unknown',
+            formData: data,
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            userAgent: navigator.userAgent
+          })
+        });
+      } catch (error) {
+        console.warn('FormMirror: Failed to record form submission', error);
+      }
+    };
+
+    document.addEventListener('submit', handleFormSubmit);
+    
+    return () => {
+      document.removeEventListener('submit', handleFormSubmit);
+    };
+  }, []);
+
+  return null;
+};
+
+// Add <FormTracker /> once in your root component (e.g. App.tsx)`,
+      filename: 'FormTracker.tsx'
+    },
+
+    nextjs: {
+      code: `// ${comment}
+'use client';
+
+import { useEffect } from 'react';
+
+export default function FormTracker() {
+  useEffect(() => {
+    const handleFormSubmit = async (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      try {
+        await fetch('/api/form-entry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectId: '${projectId}',
+            formId: form.id || form.name || 'unknown',
+            formData: data,
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            userAgent: navigator.userAgent
+          })
+        });
+      } catch (error) {
+        console.warn('FormMirror: Failed to record form submission', error);
+      }
+    };
+
+    document.addEventListener('submit', handleFormSubmit);
+    
+    return () => {
+      document.removeEventListener('submit', handleFormSubmit);
+    };
+  }, []);
+
+  return null;
+}
+
+// Add <FormTracker /> in app/layout.tsx or pages/_app.tsx`,
+      filename: 'FormTracker.tsx'
+    },
+
+    vanilla: {
+      code: `// ${comment}
+// FormMirror Form Entry Handler
+document.addEventListener('DOMContentLoaded', () => {
+  // Capture all form submissions
+  document.addEventListener('submit', async (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    
+    // Collect form data
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+      // Send form data to ad-blocker friendly endpoint
+      await fetch('/api/form-entry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: '${projectId}',
+          formId: form.id || form.name || 'unknown',
+          formData: data,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        })
+      });
+    } catch (error) {
+      // Fail silently to not affect form functionality
+      console.warn('FormMirror: Failed to record form submission', error);
+    }
+  });
+});`,
+      filename: 'form-tracker.js'
+    },
+
+    vue: {
+      code: `<script setup>
+// ${comment}
+import { onMounted, onUnmounted } from 'vue'
+
+let handleFormSubmit;
+
+onMounted(() => {
+  handleFormSubmit = async (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+      await fetch('/api/form-entry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: '${projectId}',
+          formId: form.id || form.name || 'unknown',
+          formData: data,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        })
+      });
+    } catch (error) {
+      console.warn('FormMirror: Failed to record form submission', error);
+    }
+  };
+
+  document.addEventListener('submit', handleFormSubmit);
+});
+
+onUnmounted(() => {
+  if (handleFormSubmit) {
+    document.removeEventListener('submit', handleFormSubmit);
+  }
+});
+</script>
+
+<!-- Add this component once in your root App.vue or main layout -->`,
+      filename: 'FormTracker.vue'
+    },
+
+    svelte: {
+      code: `<script>
+  // ${comment}
+  import { onMount, onDestroy } from 'svelte';
+
+  let handleFormSubmit;
+
+  onMount(() => {
+    handleFormSubmit = async (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      try {
+        await fetch('/api/form-entry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectId: '${projectId}',
+            formId: form.id || form.name || 'unknown',
+            formData: data,
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            userAgent: navigator.userAgent
+          })
+        });
+      } catch (error) {
+        console.warn('FormMirror: Failed to record form submission', error);
+      }
+    };
+
+    document.addEventListener('submit', handleFormSubmit);
+    
+    onDestroy(() => {
+      document.removeEventListener('submit', handleFormSubmit);
+    });
+  });
+</script>
+
+<!-- Add this component once in your root layout to track all forms -->`,
+      filename: 'FormTracker.svelte'
+    },
+
+    angular: {
+      code: `// ${comment}
+import { Injectable, NgZone } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Inject } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class FormTrackerService {
+  constructor(@Inject(DOCUMENT) private document: Document, private zone: NgZone) {
+    this.initFormTracking();
+  }
+
+  private initFormTracking() {
+    this.zone.runOutsideAngular(() => {
+      this.document.addEventListener('submit', async (e) => {
+        const form = e.target as HTMLFormElement;
+        if (!form || !(form instanceof HTMLFormElement)) return;
+        
+        const formData = new FormData(form);
+        const data = {} as Record<string, any>;
+        for (const [key, value] of formData.entries()) {
+          data[key] = value;
+        }
+        
+        try {
+          await fetch('/api/form-entry', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              projectId: '${projectId}',
+              formId: form.id || form.name || 'unknown',
+              formData: data,
+              timestamp: new Date().toISOString(),
+              url: window.location.href,
+              userAgent: navigator.userAgent
+            })
+          });
+        } catch (error) {
+          console.warn('FormMirror: Failed to record form submission', error);
+        }
+      });
+    });
+  }
+}
+
+// In your app.component.ts, inject FormTrackerService to activate it
+// providers: [FormTrackerService]`,
+      filename: 'form-tracker.service.ts'
+    },
+  }
+
+  return codes[framework] || codes.html
+}
+
 // Alternative: Generate randomized script names per project for extra stealth
 // const generateObfuscatedScriptUrl = (projectId: string) => {
 //   // Create a deterministic but non-obvious hash from project ID
