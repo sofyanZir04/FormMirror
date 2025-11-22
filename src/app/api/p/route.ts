@@ -1,10 +1,27 @@
 // app/api/p/route.ts - Pixel endpoint for ad-blocker resistant tracking
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
 export async function GET(req: NextRequest) {
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req);
+  }
+
+  // Set CORS headers
+  const origin = req.headers.get('origin');
+  const headers = {
+    'Content-Type': 'image/gif',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Timing-Allow-Origin': origin || '*',
+  };
+
   // Handle GET requests (pixel tracking)
   const url = new URL(req.url)
   const projectId = url.searchParams.get('i') || url.searchParams.get('pid')
@@ -34,28 +51,33 @@ export async function GET(req: NextRequest) {
 
   // Return a 1x1 transparent GIF
   const gif = Buffer.from('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64')
-  return new Response(gif, {
+  return new NextResponse(gif, {
     status: 200,
-    headers: {
-      'Content-Type': 'image/gif',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Access-Control-Allow-Origin': '*',
-      'Timing-Allow-Origin': '*',
-    },
+    headers: headers,
   })
 }
 
 export async function POST(req: NextRequest) {
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req);
+  }
+
+  // Set CORS headers
+  const origin = req.headers.get('origin');
+  const headers = {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Timing-Allow-Origin': origin || '*',
+  };
+
   // Also handle POST requests for maximum compatibility
-  const immediateResponse = new Response(null, {
+  const immediateResponse = new NextResponse(null, {
     status: 204,
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Timing-Allow-Origin': '*',
-    },
+    headers: headers,
   })
 
   // Process data asynchronously (don't await)
@@ -104,13 +126,19 @@ export async function POST(req: NextRequest) {
 }
 
 // Handle OPTIONS for CORS preflight
-export async function OPTIONS() {
-  return new Response(null, {
+export async function OPTIONS(req: NextRequest) {
+  return handleOptions(req);
+}
+
+function handleOptions(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': origin || '*',
+      'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     },
-  })
+  });
 }

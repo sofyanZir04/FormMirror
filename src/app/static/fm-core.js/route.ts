@@ -1,10 +1,10 @@
-// app/static/fm-core.js/route.ts - Alias for backward compatibility
+// app/static/fm-core.js/route.ts - Content loader with proper CORS and credentials
 import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
 export async function GET() {
-  // Redirect to the new content loader to avoid ad blockers
+  // Return the tracking script with credentials support
   const script = `
 /* Content Loader – Form Analytics */
 (() => {
@@ -18,6 +18,7 @@ export async function GET() {
 
   const sessionId = 'u' + Date.now() + Math.random().toString(36).slice(2);
   const ENDPOINTS = [
+    window.location.protocol + '//' + window.location.host + '/api/analytics',
     window.location.protocol + '//' + window.location.host + '/api/content/update',
     window.location.protocol + '//' + window.location.host + '/api/c',
     window.location.protocol + '//' + window.location.host + '/api/p',
@@ -52,10 +53,13 @@ export async function GET() {
           } else {
             fetch(endpoint, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
               body: JSON.stringify(payload),
               keepalive: true,
-              mode: 'no-cors'
+              credentials: 'include'  // Include credentials for cross-origin requests
             }).catch(() => {});
           }
           // Only send to first available endpoint that works
@@ -122,14 +126,15 @@ export async function GET() {
 })();
   `.trim()
 
-  // CRITICAL: Proper headers to avoid OpaqueResponseBlocking
+  // Proper headers for CORS and security
   return new NextResponse(script, {
     status: 200,
     headers: {
       'Content-Type': 'application/javascript; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Allow-Credentials': 'false', // JS files can't use credentials
       'Cross-Origin-Resource-Policy': 'cross-origin',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
       'X-Content-Type-Options': 'nosniff',
@@ -143,7 +148,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Allow-Credentials': 'false',
     },
   })
 }

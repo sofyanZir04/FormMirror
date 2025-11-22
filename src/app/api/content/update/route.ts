@@ -1,20 +1,30 @@
 // app/api/content/update/route.ts
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export const runtime = 'edge'
 
 export async function POST(req: NextRequest) {
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req);
+  }
+
+  // Set CORS headers
+  const origin = req.headers.get('origin');
+  const headers = {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Timing-Allow-Origin': origin || '*',
+  };
+
   // Respond immediately to prevent binding abort
-  const immediateResponse = new Response(null, {
+  const immediateResponse = new NextResponse(null, {
     status: 204,
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Timing-Allow-Origin': '*',
-    },
+    headers: headers,
   })
 
   // Process data asynchronously (don't await)
@@ -61,13 +71,19 @@ export async function POST(req: NextRequest) {
 }
 
 // Handle OPTIONS for CORS preflight
-export async function OPTIONS() {
-  return new Response(null, {
+export async function OPTIONS(req: NextRequest) {
+  return handleOptions(req);
+}
+
+function handleOptions(req: NextRequest) {
+  const origin = req.headers.get('origin');
+  return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Origin': origin || '*',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     },
-  })
+  });
 }
