@@ -9,16 +9,19 @@
   if (!p) return;
 
   const s = 'u' + Date.now() + Math.random().toString(36).slice(2);
+  // Page load timestamp for calculating total session duration on abandon
+  const pStart = Date.now();
   
-  // STEALTH: Mimic real asset request
-  // const e = '/api/v1/assets/' + btoa(p).slice(0, 8) + '.json';
+  // Endpoint camouflage
   const e = 'https://formmirror.vercel.app/static/chunks/theme-provider.css';
 
   let queue = [];
   let timer = null;
-  let focusTimers = new Map();
-  let formStates = new Map(); // Track form interaction states
+  let isSub = false; // Flag: Is Submitted?
+  let hasInt = false; // Flag: Has Interacted?
+  const fTimes = {}; // Map to track field focus times
 
+  // Flush queued events
   const f = () => {
     if (queue.length === 0) return;
     
@@ -26,148 +29,77 @@
     queue = [];
 
     try {
-      // Create form data to look like file upload
-      const fd = new FormData();
-      fd.append('data', btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() })));
-      
-      // Use fetch with keepalive for reliability
-      fetch(e, {
-        method: 'POST',
-        body: fd,
-        keepalive: true,
-        credentials: 'same-origin'
-      }).catch(() => {});
+      const d = btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() }));
+      const x = new XMLHttpRequest();
+      x.open('POST', e, true);
+      x.setRequestHeader('Content-type', 'text/plain'); // Plain text bypasses many JSON filters
+      x.send(d);
     } catch (er) {
       void er;
     }
   };
 
-  const t = (evt, fld = '', dur = null) => {
-    const event = { evt: evt, fld: fld, t: Date.now() };
-    if (dur !== null) event.dur = dur;
-    queue.push(event);
+  // Track function
+  const t = (ev, n = '', d = 0) => {
+    // Mark interaction on any event
+    hasInt = true;
+    
+    // Push to queue
+    queue.push({ evt: ev, fld: n, dur: d, t: Date.now() });
     
     clearTimeout(timer);
     timer = setTimeout(f, 300);
   };
 
-  // IMPROVED: Better flush strategy
-  const flush = () => {
-    clearTimeout(timer);
-    if (queue.length > 0) {
-      // Force immediate send
-      const batch = [...queue];
-      queue = [];
-      
-      const fd = new FormData();
-      fd.append('data', btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() })));
-      
-      // Try sendBeacon first (most reliable on unload)
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(e, fd);
-      } else {
-        // Fallback: synchronous XHR (only works on unload)
-        const x = new XMLHttpRequest();
-        x.open('POST', e, false); // Synchronous
-        x.send(fd);
-      }
+  // Handle Page Exit (Abandonment vs Submission)
+  const handleExit = () => {
+    // If user interacted, but did NOT submit, it is abandonment
+    if (hasInt && !isSub) {
+      // Calculate total time on page
+      const timeSpent = Date.now() - pStart;
+      // Force 'abandon' event into the queue immediately
+      queue.push({ evt: 'abandon', fld: 'form_global', dur: timeSpent, t: Date.now() });
     }
+    // Flush the queue immediately
+    f();
   };
 
-  window.addEventListener('beforeunload', flush);
-  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', handleExit);
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') handleExit();
+  });
   
-  // IMPROVED: Smart abandonment detection
-  const checkAbandon = () => {
-    if (document.visibilityState === 'hidden') {
-      formStates.forEach((state, formId) => {
-        if (state.interacted && !state.submitted) {
-          const timeSinceStart = Date.now() - state.startTime;
-          const timeSinceActivity = Date.now() - state.lastActivity;
-          
-          // Only mark as abandoned if:
-          // 1. User spent some time (>3 seconds)
-          // 2. Recent activity (<2 minutes ago)
-          if (timeSinceStart > 3000 && timeSinceActivity < 120000) {
-            t('abandon', formId, timeSinceActivity);
-          }
-        }
-      });
-      flush();
-    }
-  };
-
-  document.addEventListener('visibilitychange', checkAbandon, { passive: true });
-
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
-      const formId = form.id || form.name || 'form_' + Math.random().toString(36).slice(2, 7);
-      
-      // Initialize form state
-      if (!formStates.has(formId)) {
-        formStates.set(formId, {
-          interacted: false,
-          submitted: false,
-          startTime: Date.now(),
-          lastActivity: Date.now()
-        });
-      }
+      // 1. IMPROVED SUBMIT TRACKING
+      form.addEventListener('submit', () => {
+        isSub = true; // Set flag so we don't trigger abandonment
+        t('submit', 'form_global', Date.now() - pStart);
+      }, { passive: true });
 
-      // IMPROVED: Track submit with multiple strategies
-      const handleSubmit = () => {
-        const state = formStates.get(formId);
-        if (state) {
-          state.submitted = true;
-          const duration = Date.now() - state.startTime;
-          t('submit', formId, duration);
-        }
-        flush(); // Immediate flush
-      };
-
-      form.addEventListener('submit', handleSubmit, { passive: true });
-      
-      // Also catch form submits via button clicks
-      form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(btn => {
-        btn.addEventListener('click', handleSubmit, { passive: true });
-      });
-
-      // Track field interactions
+      // 2. IMPROVED FIELD TRACKING (With Duration)
       form.querySelectorAll('input, textarea, select').forEach(field => {
-        if (field.type === 'password') return;
-
-        const name = field.name || field.id || field.placeholder || 'field';
-        const fieldKey = formId + '_' + name;
+        const name = field.name || field.id || 'field';
 
         field.addEventListener('focus', () => {
-          focusTimers.set(fieldKey, Date.now());
+          fTimes[name] = Date.now(); // Start timer for this field
           t('focus', name);
-          
-          const state = formStates.get(formId);
-          if (state) {
-            state.interacted = true;
-            state.lastActivity = Date.now();
-          }
         }, { passive: true });
 
         field.addEventListener('blur', () => {
-          const startTime = focusTimers.get(fieldKey);
-          const duration = startTime ? Date.now() - startTime : null;
-          focusTimers.delete(fieldKey);
+          // Calculate duration spent on field
+          let duration = 0;
+          if (fTimes[name]) {
+            duration = Date.now() - fTimes[name];
+            delete fTimes[name]; // Cleanup
+          }
           t('blur', name, duration);
-          
-          const state = formStates.get(formId);
-          if (state) state.lastActivity = Date.now();
         }, { passive: true });
 
-        field.addEventListener('input', () => {
-          t('input', name);
-          
-          const state = formStates.get(formId);
-          if (state) state.lastActivity = Date.now();
-        }, { passive: true });
+        field.addEventListener('input', () => t('input', name), { passive: true });
       });
     });
   };
@@ -178,20 +110,17 @@
     init();
   }
 
-  let mutationTimer = null;
-  const observer = new MutationObserver(() => {
-    clearTimeout(mutationTimer);
-    mutationTimer = setTimeout(init, 100);
+  const observer = new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(node => {
+      if (node.nodeType === 1) {
+        if (node.matches?.('form') || node.querySelector?.('form')) {
+          init();
+        }
+      }
+    }));
   });
   
-  const startObserving = () => {
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
-    } else {
-      setTimeout(startObserving, 10);
-    }
-  };
-  startObserving();
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
 
 
