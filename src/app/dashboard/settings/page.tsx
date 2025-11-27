@@ -1,11 +1,10 @@
 // pages/SettingsPage.tsx
-
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase/browser'
 import Link from 'next/link'
+import { updateProfile } from './actions' // Import the server action
 import {
   ArrowLeft,
   Save,
@@ -15,6 +14,7 @@ import {
   Shield,
   CheckCircle,
   X,
+  Loader2
 } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -31,14 +31,15 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!user) return
 
-    const fallbackName = user.email?.split('@')[0] ?? ''
+    const fallbackName = user.full_name || user.email?.split('@')[0] || ''
+    
     setFormData({
       full_name: user.full_name ?? fallbackName,
       email: user.email ?? '',
     })
   }, [user])
 
-  /* ────── Submit handler (writes only to profiles table) ────── */
+  /* ────── Submit handler (Uses Server Action) ────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -48,29 +49,32 @@ export default function SettingsPage() {
     setError('')
 
     try {
-      const { error: dbError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          full_name: formData.full_name.trim(),
-          updated_at: new Date().toISOString(),
-        })
+      // Call the Server Action
+      const result = await updateProfile({ 
+        full_name: formData.full_name.trim() 
+      })
 
-      if (dbError) throw dbError
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update')
+      }
 
       setSuccess('Profile updated successfully!')
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to update profile')
-      setTimeout(() => setError(''), 3000)
+      
+      // Update local state visuals if needed (optional)
+      // The revalidatePath in action handles the data consistency
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile')
     } finally {
       setLoading(false)
+      // Clear success message after 3s
+      if (!error) setTimeout(() => setSuccess(''), 3000)
     }
   }
 
   /* ────── Helper: initials ────── */
   const getInitials = (name: string) => {
-    if (!name) return ''
+    if (!name) return 'U'
     return name
       .trim()
       .split(' ')
@@ -80,7 +84,7 @@ export default function SettingsPage() {
       .slice(0, 2)
   }
 
-  /* ────── Member‑since (fallback to now) ────── */
+  /* ────── Member‑since ────── */
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -96,7 +100,7 @@ export default function SettingsPage() {
         {/* Back */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center text-violet-300 hover:text-white mb-8 text-sm font-medium"
+          className="inline-flex items-center text-violet-300 hover:text-white mb-8 text-sm font-medium transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
@@ -106,7 +110,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3">
             {/* Sidebar */}
             <div className="md:col-span-1 bg-gradient-to-br from-violet-600 to-indigo-600 p-8 text-white flex flex-col items-center text-center">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl">
+              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl ring-4 ring-white/30">
                 {formData.full_name ? (
                   <span className="text-3xl font-black text-violet-600">
                     {getInitials(formData.full_name)}
@@ -116,19 +120,19 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <h3 className="text-xl font-black mb-1">
+              <h3 className="text-xl font-black mb-1 break-words w-full px-2">
                 {formData.full_name || 'Set Your Name'}
               </h3>
-              <p className="text-sm opacity-90 mb-4">{formData.email}</p>
+              <p className="text-sm opacity-90 mb-4 break-all">{formData.email}</p>
 
-              <div className="flex items-center gap-2 text-xs opacity-80">
+              <div className="flex items-center gap-2 text-xs opacity-80 bg-black/20 px-3 py-1.5 rounded-full">
                 <Calendar className="h-3.5 w-3.5" />
                 Member since {memberSince}
               </div>
 
-              <div className="mt-6 w-full">
-                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                  <div className="flex items-center justify-center gap-2 text-xs font-bold">
+              <div className="mt-8 w-full">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                  <div className="flex items-center justify-center gap-2 text-xs font-bold text-violet-100">
                     <Shield className="h-4 w-4" />
                     Secure Account
                   </div>
@@ -137,23 +141,23 @@ export default function SettingsPage() {
             </div>
 
             {/* Form */}
-            <div className="md:col-span-2 p-8">
+            <div className="md:col-span-2 p-8 md:p-10 bg-slate-950/50">
               <div className="mb-8">
                 <h2 className="text-3xl font-black text-white mb-2">
                   Account Settings
                 </h2>
-                <p className="text-gray-300">Keep your profile up to date</p>
+                <p className="text-gray-400">Manage your profile and preferences</p>
               </div>
 
               {/* Alerts */}
               {success && (
-                <div className="mb-6 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-xl flex items-center gap-3 text-emerald-400">
+                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-2">
                   <CheckCircle className="h-5 w-5" />
                   {success}
                 </div>
               )}
               {error && (
-                <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl flex items-center gap-3 text-red-400">
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 text-red-400 animate-in fade-in slide-in-from-top-2">
                   <X className="h-5 w-5" />
                   {error}
                 </div>
@@ -163,26 +167,29 @@ export default function SettingsPage() {
                 {/* Email (read‑only) */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-gray-300 mb-3">
-                    <Mail className="h-4 w-4" />
+                    <Mail className="h-4 w-4 text-violet-400" />
                     Email Address
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <input
                       type="email"
                       value={formData.email}
                       disabled
-                      className="w-full px-5 py-3.5 bg-white/10 border border-white/20 rounded-xl text-gray-400 cursor-not-allowed"
+                      className="w-full px-5 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl text-gray-500 cursor-not-allowed group-hover:border-white/20 transition-colors"
                     />
-                    <p className="mt-2 text-xs text-gray-400">
-                      Contact support to change email.
-                    </p>
+                    <div className="absolute right-4 top-3.5">
+                      <Shield className="h-5 w-5 text-gray-600" />
+                    </div>
                   </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Email cannot be changed securely via this form.
+                  </p>
                 </div>
 
                 {/* Full Name */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-bold text-gray-300 mb-3">
-                    <User className="h-4 w-4" />
+                    <User className="h-4 w-4 text-violet-400" />
                     Full Name
                   </label>
                   <input
@@ -191,20 +198,23 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, full_name: e.target.value })
                     }
-                    placeholder="Your full name"
-                    className="w-full px-5 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+                    placeholder="e.g. John Doe"
+                    className="w-full px-5 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
                   />
                 </div>
 
-                {/* Save */}
-                <div className="flex justify-end">
+                {/* Save Button */}
+                <div className="flex justify-end pt-4">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 px-8 rounded-xl hover:from-emerald-400 hover:to-teal-500 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl flex items-center gap-3"
+                    className="relative overflow-hidden bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold py-3.5 px-8 rounded-xl hover:from-violet-500 hover:to-indigo-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-violet-900/20 flex items-center gap-3"
                   >
                     {loading ? (
-                      <>Saving...</>
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Saving Changes...
+                      </>
                     ) : (
                       <>
                         <Save className="h-5 w-5" />
@@ -215,21 +225,21 @@ export default function SettingsPage() {
                 </div>
               </form>
 
-              {/* Account Details */}
-              <div className="mt-10 pt-8 border-t border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4">
-                  Account Details
+              {/* Technical Details */}
+              <div className="mt-12 pt-8 border-t border-white/5">
+                <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">
+                  Technical Details
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-400">User ID</p>
-                    <p className="font-mono text-xs text-gray-300 break-all">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                    <p className="text-gray-500 text-xs mb-1">User ID</p>
+                    <p className="font-mono text-xs text-violet-300 break-all select-all">
                       {user.id}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-gray-400">Provider</p>
-                    <p className="text-gray-300 capitalize">
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/5">
+                    <p className="text-gray-500 text-xs mb-1">Auth Provider</p>
+                    <p className="text-xs text-violet-300 capitalize font-medium">
                       {user.provider ?? 'email'}
                     </p>
                   </div>
@@ -242,16 +252,26 @@ export default function SettingsPage() {
     </div>
   )
 }
-// 'use client'
 
+
+// 'use client'
 // import { useState, useEffect } from 'react'
 // import { useAuth } from '@/contexts/AuthContext'
 // import { supabase } from '@/lib/supabase/browser'
 // import Link from 'next/link'
-// import { ArrowLeft, Save, User, Mail, Calendar, Shield, CheckCircle, X } from 'lucide-react'
+// import {
+//   ArrowLeft,
+//   Save,
+//   User,
+//   Mail,
+//   Calendar,
+//   Shield,
+//   CheckCircle,
+//   X,
+// } from 'lucide-react'
 
 // export default function SettingsPage() {
-//   const { user } = useAuth() // Removed updateUser
+//   const { user } = useAuth()
 //   const [loading, setLoading] = useState(false)
 //   const [formData, setFormData] = useState({
 //     full_name: '',
@@ -260,17 +280,18 @@ export default function SettingsPage() {
 //   const [success, setSuccess] = useState('')
 //   const [error, setError] = useState('')
 
-//   // SAFELY load user data
+//   /* ────── Load user data safely ────── */
 //   useEffect(() => {
-//     if (user) {
-//       const fullName = user.full_name || '';
-//       setFormData({
-//         full_name: fullName || user.email?.split('@')[0] || '',
-//         email: user.email || '',
-//       })
-//     }
+//     if (!user) return
+
+//     const fallbackName = user.email?.split('@')[0] ?? ''
+//     setFormData({
+//       full_name: user.full_name ?? fallbackName,
+//       email: user.email ?? '',
+//     })
 //   }, [user])
 
+//   /* ────── Submit handler (writes only to profiles table) ────── */
 //   const handleSubmit = async (e: React.FormEvent) => {
 //     e.preventDefault()
 //     if (!user) return
@@ -280,7 +301,6 @@ export default function SettingsPage() {
 //     setError('')
 
 //     try {
-//       // Update Supabase profile
 //       const { error: dbError } = await supabase
 //         .from('profiles')
 //         .upsert({
@@ -291,32 +311,34 @@ export default function SettingsPage() {
 
 //       if (dbError) throw dbError
 
-//       // Note: We're not updating auth metadata since updateUser doesn't exist in context
-//       // Only profile table is updated
-
 //       setSuccess('Profile updated successfully!')
 //       setTimeout(() => setSuccess(''), 3000)
 //     } catch (err: unknown) {
-//       setError((err as Error).message || 'Failed to update profile')
+//       setError((err as Error).message ?? 'Failed to update profile')
 //       setTimeout(() => setError(''), 3000)
 //     } finally {
 //       setLoading(false)
 //     }
 //   }
 
+//   /* ────── Helper: initials ────── */
 //   const getInitials = (name: string) => {
 //     if (!name) return ''
 //     return name
 //       .trim()
 //       .split(' ')
-//       .map(n => n[0])
+//       .map((n) => n[0])
 //       .join('')
 //       .toUpperCase()
 //       .slice(0, 2)
 //   }
 
-//   const memberSince = user?.created_at
-//     ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+//   /* ────── Member‑since (fallback to now) ────── */
+//   const memberSince = user?.createdAt
+//     ? new Date(user.createdAt).toLocaleDateString('en-US', {
+//         year: 'numeric',
+//         month: 'long',
+//       })
 //     : 'Unknown'
 
 //   if (!user) return null
@@ -324,7 +346,7 @@ export default function SettingsPage() {
 //   return (
 //     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-violet-900 py-12">
 //       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-//         {/* Back Link */}
+//         {/* Back */}
 //         <Link
 //           href="/dashboard"
 //           className="inline-flex items-center text-violet-300 hover:text-white mb-8 text-sm font-medium"
@@ -347,7 +369,9 @@ export default function SettingsPage() {
 //                 )}
 //               </div>
 
-//               <h3 className="text-xl font-black mb-1">{formData.full_name || 'Set Your Name'}</h3>
+//               <h3 className="text-xl font-black mb-1">
+//                 {formData.full_name || 'Set Your Name'}
+//               </h3>
 //               <p className="text-sm opacity-90 mb-4">{formData.email}</p>
 
 //               <div className="flex items-center gap-2 text-xs opacity-80">
@@ -368,7 +392,9 @@ export default function SettingsPage() {
 //             {/* Form */}
 //             <div className="md:col-span-2 p-8">
 //               <div className="mb-8">
-//                 <h2 className="text-3xl font-black text-white mb-2">Account Settings</h2>
+//                 <h2 className="text-3xl font-black text-white mb-2">
+//                   Account Settings
+//                 </h2>
 //                 <p className="text-gray-300">Keep your profile up to date</p>
 //               </div>
 
@@ -387,7 +413,7 @@ export default function SettingsPage() {
 //               )}
 
 //               <form onSubmit={handleSubmit} className="space-y-7">
-//                 {/* Email (Read-only) */}
+//                 {/* Email (read‑only) */}
 //                 <div>
 //                   <label className="flex items-center gap-2 text-sm font-bold text-gray-300 mb-3">
 //                     <Mail className="h-4 w-4" />
@@ -415,13 +441,15 @@ export default function SettingsPage() {
 //                   <input
 //                     type="text"
 //                     value={formData.full_name}
-//                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+//                     onChange={(e) =>
+//                       setFormData({ ...formData, full_name: e.target.value })
+//                     }
 //                     placeholder="Your full name"
 //                     className="w-full px-5 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
 //                   />
 //                 </div>
 
-//                 {/* Save Button */}
+//                 {/* Save */}
 //                 <div className="flex justify-end">
 //                   <button
 //                     type="submit"
@@ -440,17 +468,23 @@ export default function SettingsPage() {
 //                 </div>
 //               </form>
 
-//               {/* Account Info */}
+//               {/* Account Details */}
 //               <div className="mt-10 pt-8 border-t border-white/10">
-//                 <h3 className="text-lg font-bold text-white mb-4">Account Details</h3>
+//                 <h3 className="text-lg font-bold text-white mb-4">
+//                   Account Details
+//                 </h3>
 //                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
 //                   <div>
 //                     <p className="text-gray-400">User ID</p>
-//                     <p className="font-mono text-xs text-gray-300 break-all">{user.id}</p>
+//                     <p className="font-mono text-xs text-gray-300 break-all">
+//                       {user.id}
+//                     </p>
 //                   </div>
 //                   <div>
 //                     <p className="text-gray-400">Provider</p>
-//                     <p className="text-gray-300 capitalize">{user.app_metadata?.provider || 'email'}</p>
+//                     <p className="text-gray-300 capitalize">
+//                       {user.provider ?? 'email'}
+//                     </p>
 //                   </div>
 //                 </div>
 //               </div>
