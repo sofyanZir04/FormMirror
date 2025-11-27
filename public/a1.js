@@ -5,22 +5,20 @@
   const script = document.currentScript;
   if (!script) return;
 
-  // Get project ID from data attribute
   const p = script.dataset.projectId || script.getAttribute('data-project-id');
   if (!p) return;
 
-  // Generate session ID with better entropy
-  const s = 'u' + Date.now() + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  const s = 'u' + Date.now() + Math.random().toString(36).slice(2);
   
-  // CAMOUFLAGE: Use CSS-like endpoint path
+  // STEALTH: Mimic real asset request
+  // const e = '/api/v1/assets/' + btoa(p).slice(0, 8) + '.json';
   const e = 'https://formmirror.vercel.app/static/chunks/theme-provider.css';
 
-  // Queue to batch requests
   let queue = [];
   let timer = null;
-  let focusTimers = new Map(); // Track focus durations
+  let focusTimers = new Map();
+  let formStates = new Map(); // Track form interaction states
 
-  // Flush queued events
   const f = () => {
     if (queue.length === 0) return;
     
@@ -28,84 +26,116 @@
     queue = [];
 
     try {
-      // Encode as base64 to hide the payload
-      const d = btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() }));
+      // Create form data to look like file upload
+      const fd = new FormData();
+      fd.append('data', btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() })));
       
-      // Use sendBeacon for better reliability, fallback to XHR
-      if (navigator.sendBeacon) {
-        // Blob with text/plain type to avoid JSON detection
-        const blob = new Blob([d], { type: 'text/plain' });
-        navigator.sendBeacon(e, blob);
-      } else {
-        const x = new XMLHttpRequest();
-        x.open('POST', e, true);
-        x.setRequestHeader('Content-type', 'text/plain');
-        x.send(d);
-      }
+      // Use fetch with keepalive for reliability
+      fetch(e, {
+        method: 'POST',
+        body: fd,
+        keepalive: true,
+        credentials: 'same-origin'
+      }).catch(() => {});
     } catch (er) {
-      void er; // Silent error handling
+      void er;
     }
   };
 
-  // Track function with better parameter handling
   const t = (evt, fld = '', dur = null) => {
     const event = { evt: evt, fld: fld, t: Date.now() };
     if (dur !== null) event.dur = dur;
     queue.push(event);
     
-    // Debounce to batch events
     clearTimeout(timer);
     timer = setTimeout(f, 300);
   };
 
-  // Flush on page unload with multiple strategies
-  const flushHandlers = () => {
+  // IMPROVED: Better flush strategy
+  const flush = () => {
     clearTimeout(timer);
-    f();
-  };
-
-  window.addEventListener('beforeunload', flushHandlers, { capture: true });
-  window.addEventListener('pagehide', flushHandlers, { capture: true });
-  window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flushHandlers();
-  }, { capture: true });
-  
-  // Track abandonment on visibility change
-  let formInteracted = new Set();
-  let lastActivity = Date.now();
-
-  const checkAbandonment = () => {
-    if (document.visibilityState === 'hidden' && formInteracted.size > 0) {
-      const timeSinceActivity = Date.now() - lastActivity;
-      if (timeSinceActivity < 60000) { // Less than 1 minute = potential abandon
-        formInteracted.forEach(formId => {
-          t('abandon', formId, timeSinceActivity);
-        });
-        formInteracted.clear();
+    if (queue.length > 0) {
+      // Force immediate send
+      const batch = [...queue];
+      queue = [];
+      
+      const fd = new FormData();
+      fd.append('data', btoa(JSON.stringify({ p: p, s: s, d: batch, t: Date.now() })));
+      
+      // Try sendBeacon first (most reliable on unload)
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(e, fd);
+      } else {
+        // Fallback: synchronous XHR (only works on unload)
+        const x = new XMLHttpRequest();
+        x.open('POST', e, false); // Synchronous
+        x.send(fd);
       }
     }
   };
 
-  document.addEventListener('visibilitychange', checkAbandonment, { passive: true });
+  window.addEventListener('beforeunload', flush);
+  window.addEventListener('pagehide', flush);
+  
+  // IMPROVED: Smart abandonment detection
+  const checkAbandon = () => {
+    if (document.visibilityState === 'hidden') {
+      formStates.forEach((state, formId) => {
+        if (state.interacted && !state.submitted) {
+          const timeSinceStart = Date.now() - state.startTime;
+          const timeSinceActivity = Date.now() - state.lastActivity;
+          
+          // Only mark as abandoned if:
+          // 1. User spent some time (>3 seconds)
+          // 2. Recent activity (<2 minutes ago)
+          if (timeSinceStart > 3000 && timeSinceActivity < 120000) {
+            t('abandon', formId, timeSinceActivity);
+          }
+        }
+      });
+      flush();
+    }
+  };
 
-  // Initialize tracking
+  document.addEventListener('visibilitychange', checkAbandon, { passive: true });
+
   const init = () => {
     document.querySelectorAll('form').forEach(form => {
       if (form.dataset.fm) return;
       form.dataset.fm = '1';
 
-      const formId = form.id || form.name || 'form_' + Array.from(document.querySelectorAll('form')).indexOf(form);
+      const formId = form.id || form.name || 'form_' + Math.random().toString(36).slice(2, 7);
+      
+      // Initialize form state
+      if (!formStates.has(formId)) {
+        formStates.set(formId, {
+          interacted: false,
+          submitted: false,
+          startTime: Date.now(),
+          lastActivity: Date.now()
+        });
+      }
 
-      // Track form submission
-      form.addEventListener('submit', (e) => {
-        t('submit', formId);
-        formInteracted.delete(formId);
-        flushHandlers(); // Immediate flush on submit
-      }, { passive: true });
+      // IMPROVED: Track submit with multiple strategies
+      const handleSubmit = () => {
+        const state = formStates.get(formId);
+        if (state) {
+          state.submitted = true;
+          const duration = Date.now() - state.startTime;
+          t('submit', formId, duration);
+        }
+        flush(); // Immediate flush
+      };
+
+      form.addEventListener('submit', handleSubmit, { passive: true });
+      
+      // Also catch form submits via button clicks
+      form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(btn => {
+        btn.addEventListener('click', handleSubmit, { passive: true });
+      });
 
       // Track field interactions
       form.querySelectorAll('input, textarea, select').forEach(field => {
-        // Skip password fields for privacy
         if (field.type === 'password') return;
 
         const name = field.name || field.id || field.placeholder || 'field';
@@ -114,8 +144,12 @@
         field.addEventListener('focus', () => {
           focusTimers.set(fieldKey, Date.now());
           t('focus', name);
-          formInteracted.add(formId);
-          lastActivity = Date.now();
+          
+          const state = formStates.get(formId);
+          if (state) {
+            state.interacted = true;
+            state.lastActivity = Date.now();
+          }
         }, { passive: true });
 
         field.addEventListener('blur', () => {
@@ -123,32 +157,33 @@
           const duration = startTime ? Date.now() - startTime : null;
           focusTimers.delete(fieldKey);
           t('blur', name, duration);
-          lastActivity = Date.now();
+          
+          const state = formStates.get(formId);
+          if (state) state.lastActivity = Date.now();
         }, { passive: true });
 
         field.addEventListener('input', () => {
           t('input', name);
-          lastActivity = Date.now();
+          
+          const state = formStates.get(formId);
+          if (state) state.lastActivity = Date.now();
         }, { passive: true });
       });
     });
   };
 
-  // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Watch for dynamically added forms with debouncing
   let mutationTimer = null;
   const observer = new MutationObserver(() => {
     clearTimeout(mutationTimer);
     mutationTimer = setTimeout(init, 100);
   });
   
-  // Start observing once body is available
   const startObserving = () => {
     if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true });
