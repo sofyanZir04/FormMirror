@@ -394,10 +394,7 @@ export default function PricingPage() {
                 </div>
             </li>
         </ul>
-
-        <CheckoutButton>
-            Start Your Premium Access Today
-        </CheckoutButton>
+        <CheckoutButton/>                  
     </div>
 </div>
 
