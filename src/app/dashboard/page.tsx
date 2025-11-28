@@ -223,7 +223,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black mb-2">
-              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+              Welcome back{user?.full_name ? `, ${user.email.split('@')[0]}` : ''}!
             </h1>
             <p className="text-lg text-gray-300">Your privacy-first analytics hub</p>
           </div>
