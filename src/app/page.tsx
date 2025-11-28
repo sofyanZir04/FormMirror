@@ -370,11 +370,11 @@ export default function FormMirrorLanding() {
               </a>
             </div>
 
-            <div className="bg-gradient-to-br from-violet-600 to-indigo-600 p-10 rounded-2xl text-white shadow-2xl relative">
+            {/* <div className="bg-gradient-to-br from-violet-600 to-indigo-600 p-10 rounded-2xl text-white shadow-2xl relative">
               <div className="absolute -top-4 right-8 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</div>
               <h3 className="text-3xl font-black mb-4">Pro</h3>
-              <p className="text-5xl font-black mb-2">$29<span className="text-xl opacity-90">/month</span></p>
-              <p className="opacity-90 mb-8">or $24/mo billed annually (save 17%)</p>
+              <p className="text-5xl font-black mb-2">$12<span className="text-xl opacity-90">/month</span></p>
+              <p className="opacity-90 mb-8">or **Pay annually and get 1 month of service free, locking in your lowest rate for the year.**</p>
               <ul className="text-left space-y-4 mb-10">
                 {["Unlimited projects", "90-day data", "Advanced heatmaps", "Real-time + API", "Priority support"].map((i) => (
                   <li key={i} className="flex items-center gap-3"><CheckCircle className="w-5 h-5" /> {i}</li>
@@ -383,6 +383,43 @@ export default function FormMirrorLanding() {
               <a href="/auth/register" className="block py-4 bg-white text-violet-600 rounded-xl font-bold hover:bg-gray-100 transition">
                 Start Free Trial
               </a>
+            </div> */}
+            <div className="bg-gradient-to-br from-violet-600 to-indigo-600 p-10 rounded-2xl text-white shadow-2xl relative">
+                {/* Marketing Callout - Emphasizes the best deal immediately */}
+                <div className="absolute -top-4 right-8 bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-black uppercase tracking-wider">
+                    Best Value: Save $45!
+                </div>
+                
+                <h3 className="text-3xl font-black mb-2">Pro Plan</h3>
+                
+                {/* Primary Price - The attractive annual rate */}
+                <p className="text-5xl font-black mb-2">
+                    $99<span className="text-xl opacity-90">/year</span>
+                </p>
+                
+                {/* Secondary Price & Value Proposition - The "Why" behind the $99 */}
+                <p className="text-lg opacity-90 mb-8 font-semibold">
+                    Lock in your lowest rate for the year. (Billed annually)
+                    <br />
+                    <span className="text-sm opacity-70">Saves you $45 compared to monthly ($12/mo)</span>
+                </p>
+                
+                {/* Feature List - Highlight value */}
+                <ul className="text-left space-y-4 mb-10">
+                    {["Unlimited projects", "90-day data retention", "Advanced heatmaps & analytics", "Real-time data + API access", "Priority Support"].map((i) => (
+                        // Note: Assuming CheckCircle component exists in your environment
+                        <li key={i} className="flex items-start gap-3">
+                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {i}
+                        </li>
+                    ))}
+                </ul>
+                
+                <a href="/auth/register" className="block py-4 bg-white text-violet-600 rounded-xl font-black text-lg hover:bg-gray-100 transition shadow-lg">
+                    Get Started Now
+                </a>
+                
+                <p className="text-sm opacity-80 mt-4">Includes a 14-day free trial.</p>
             </div>
           </div>
         </div>

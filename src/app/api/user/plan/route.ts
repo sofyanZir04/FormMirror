@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
         features: {
           free: {
             maxProjects: 3,
-            maxFormInteractions: 1000,
+            maxFormInteractions: 5000,
             dataRetention: '7 days',
             support: 'Community',
           },

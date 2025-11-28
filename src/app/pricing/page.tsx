@@ -299,7 +299,7 @@ export default function PricingPage() {
               </div>
             </div>
 
-            {/* Pro */}
+            {/* Pro
             <div className="group relative bg-gradient-to-br from-emerald-600/20 via-teal-600/20 to-cyan-600/20 rounded-3xl p-8 border-4 border-emerald-500/40 shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-600/20 opacity-60 group-hover:opacity-80 transition-opacity" />
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl" />
@@ -336,7 +336,71 @@ export default function PricingPage() {
 
                 <CheckoutButton />
               </div>
+            </div> */}
+            {/* Premium Plan - Marketing Rebuild */}
+<div className="group relative bg-gray-900 border-4 border-teal-500/80 rounded-3xl p-8 shadow-2xl shadow-teal-500/30 transform hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+    
+    {/* Background/Design elements (kept simple but with less focus) */}
+    <div className="absolute inset-0 bg-gradient-to-br from-teal-900 to-cyan-900 opacity-90 transition-opacity" />
+    <div className="absolute top-0 right-0 h-40 w-40 bg-teal-500/10 rounded-full blur-3xl transform translate-x-1/4 -translate-y-1/4" />
+    
+    <div className="relative z-10">
+        
+        {/* Header with Marketing Angle */}
+        <div className="flex items-center justify-between mb-4">
+            <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                Premium
+            </h3>
+            {/* Value-added feature indicator */}
+            <Sparkles className="h-8 w-8 text-amber-400 animate-pulse" />
+        </div>
+        
+        {/* Annual Discount Badge - KEY MARKETING ELEMENT */}
+        <span className="inline-flex items-center rounded-full bg-teal-500/20 px-3 py-1 text-sm font-semibold text-teal-300 mb-6">
+            ✨ Save 30% with Annual Billing!
+        </span>
+
+        {/* Pricing Block - Highlighting Monthly and Annual */}
+        <div className="mb-8">
+            {/* Monthly Price */}
+            <div className="flex items-baseline">
+                <span className="text-5xl font-black text-white">$12</span>
+                <span className="text-xl text-gray-300 ml-2">/month</span>
             </div>
+            {/* Annual Price/Value */}
+            <p className="text-base text-teal-300 mt-2">
+                or get a better deal: <span className="font-bold text-white">$99 / year</span>
+            </p>
+        </div>
+
+        {/* Feature/Benefit List - Refocused on Outcomes */}
+        <ul className="space-y-4 mb-10 text-white">
+            <li className="flex items-start gap-3">
+                <Check className="h-5 w-5 mt-1 text-teal-300 shrink-0" />
+                <div>
+                    <span className="font-semibold">Deep Dive Analytics:</span> Go beyond 90 days to understand long-term trends and growth.
+                </div>
+            </li>
+            <li className="flex items-start gap-3">
+                <Check className="h-5 w-5 mt-1 text-teal-300 shrink-0" />
+                <div>
+                    <span className="font-semibold">Actionable AI Insights:</span> Get specific, data-driven recommendations on *what* to do next to optimize performance.
+                </div>
+            </li>
+            <li className="flex items-start gap-3">
+                <Check className="h-5 w-5 mt-1 text-teal-300 shrink-0" />
+                <div>
+                    <span className="font-semibold">Full Data Control</span>                    
+                </div>
+            </li>
+        </ul>
+
+        <CheckoutButton>
+            Start Your Premium Access Today
+        </CheckoutButton>
+    </div>
+</div>
+
           </div>
         </div>
       </section>
