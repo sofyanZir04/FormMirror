@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserPlan } from '@/hooks/useUserPlan'
 
-const TRIAL_DAYS = 7
+const TRIAL_DAYS = 20
 
 export interface InsightsAccess {
   hasAccess: boolean
