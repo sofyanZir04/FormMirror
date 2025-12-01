@@ -8,8 +8,7 @@ import LemonSqueezyScript from './LemonSqueezyScript';
 
 const inter = Inter({ subsets: ['latin'] })
 
-// ✅ Clean base URL (no trailing spaces!)
-const APP_URL = 'https://formmirror.com'
+const APP_URL = 'https://formmirror.vercel.app'
 
 export const metadata: Metadata = {
   title: {
@@ -52,7 +51,7 @@ export const metadata: Metadata = {
     siteName: 'FormMirror',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og-image',
         width: 1200,
         height: 630,
         alt: 'FormMirror - Privacy-Friendly Form Analytics Dashboard',
@@ -65,7 +64,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'FormMirror - Privacy-Friendly Form Analytics',
     description: 'Track form interactions and improve conversion rates with privacy-first analytics. No cookies, no personal data collection.',
-    images: ['/og-image.png'],
+    images: ['/api/og-image'],
     creator: '@formmirror',
     site: '@formmirror',
   },
